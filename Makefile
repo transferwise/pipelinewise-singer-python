@@ -2,7 +2,7 @@
 
 check_prereqs:
 	bash -c '[[ -n $$VIRTUAL_ENV ]]'
-	bash -c '[[ $$(python3 --version) == *3.5.2* ]]'
+	bash -c '[[ $$(python3 --version) == *3* ]]'
 
 install: check_prereqs
 	python3 -m pip install -e '.[dev]'

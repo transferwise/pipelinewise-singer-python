@@ -36,6 +36,10 @@ singer.write_records('my_table',
 singer.write_state({'my_table': 'd'})
 ```
 
+Singer by default doesn't use any predefined logging configuration, however, if 
+the environment variable `LOGGING_CONF_FILE` is found then the logging library 
+would use the path provided in the env variable as the logging configuration for Singer. 
+
 
 License
 -------
