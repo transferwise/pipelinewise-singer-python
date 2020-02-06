@@ -7,7 +7,7 @@ setup(name="pipelinewise-singer-python",
       description="Singer.io utility library - PipelineWise compatible",
       author="Stitch",
       classifiers=[
-          'License :: OSI Approved :: Apache v2.0',
+          'License :: OSI Approved :: Apache Software License',
           'Programming Language :: Python :: 3 :: Only'
       ],
       url="https://github.com/transferwise/pipelinewise-singer-python",
