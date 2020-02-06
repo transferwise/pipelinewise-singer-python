@@ -11,14 +11,14 @@ This is a fork of [Singer's singer-python](https://github.com/singer-io/singer-p
 Usage
 ---
 
-#### Setup environment
+### Setup environment
 This library depends on python3. We recommend using a `virtualenv` like this:
 
 ```bash
 python3 -m venv ~/.virtualenvs/singer-python
 ```
 
-#### Installation
+### Installation
 Next, install this library:
 
 ```bash
@@ -28,7 +28,7 @@ cd singer-python
 make install
 ```
 
-#### Usage example
+### Usage example
 Now, from python code within the same `virtualenv`, you can use the library:
 
 ```python
@@ -42,7 +42,7 @@ singer.write_records('my_table',
 singer.write_state({'my_table': 'd'})
 ```
 
-#### Logging configuration
+### Logging configuration
 
 **pipelinewise-singer-python** by default doesn't use any predefined logging configuration, it's up to the calling 
 library to define it. However, if the environment variable `LOGGING_CONF_FILE` is found and set then the **pipelinewise-singer-python** 
