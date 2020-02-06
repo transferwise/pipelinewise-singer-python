@@ -4,10 +4,13 @@ from setuptools import setup, find_packages
 
 setup(name="pipelinewise-singer-python",
       version='1.0.0',
-      description="Singer.io utility library",
+      description="Singer.io utility library - PipelineWise compatible",
       author="Stitch",
-      classifiers=['Programming Language :: Python :: 3 :: Only'],
-      url="http://singer.io",
+      classifiers=[
+          'License :: OSI Approved :: Apache v2.0',
+          'Programming Language :: Python :: 3 :: Only'
+      ],
+      url="https://github.com/transferwise/pipelinewise-singer-python",
       install_requires=[
           'pytz==2018.4',
           'jsonschema==2.6.0',
