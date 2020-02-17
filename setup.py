@@ -1,11 +1,16 @@
 #!/usr/bin/env python
 
-from setuptools import setup, find_packages
+from setuptools import setup
+
+with open("README.md", "r") as fh:
+    long_description = fh.read()
 
 setup(name="pipelinewise-singer-python",
       version='1.0.0',
       description="Singer.io utility library - PipelineWise compatible",
-      author="Stitch",
+      long_description=long_description,
+      long_description_content_type="text/markdown",
+      author="TransferWise",
       classifiers=[
           'License :: OSI Approved :: Apache Software License',
           'Programming Language :: Python :: 3 :: Only'
