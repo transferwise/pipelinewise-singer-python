@@ -13,14 +13,27 @@ jobs:
       - run:
           name: 'Setup virtualenv'
           command: |
-            mkdir -p ~/.virtualenvs
-            python3 -m venv ~/.virtualenvs/singer-python
-            source ~/.virtualenvs/singer-python/bin/activate
+            python3 -m venv virtualenv
+            source virtualenv/bin/activate
             pip install -U pip setuptools
             make install
+
+      - run:
+          name: 'Conflicts check'
+          command: |
+            source virtualenv/bin/activate
+            pip check && echo "No conflicts" || exit 1
+
+      - run:
+          name: 'Pylinting'
+          command: |
+            # Need to re-activate the virtualenv
+            source virtualenv/bin/activate
+            make pylinting
+
       - run:
           name: 'Run tests'
           command: |
             # Need to re-activate the virtualenv
-            source ~/.virtualenvs/singer-python/bin/activate
+            source virtualenv/bin/activate
             make test

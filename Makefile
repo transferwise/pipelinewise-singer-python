@@ -7,6 +7,8 @@ check_prereqs:
 install: check_prereqs
 	python3 -m pip install -e '.[dev]'
 
-test: install
+pylinting:
 	pylint singer -d missing-docstring,broad-except,bare-except,too-many-return-statements,too-many-branches,too-many-arguments,no-else-return,too-few-public-methods,fixme,protected-access
+
+test:
 	nosetests --with-doctest -v
