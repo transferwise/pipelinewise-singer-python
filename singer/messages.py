@@ -189,6 +189,7 @@ def parse_message(msg):
         time_extracted = obj.get('time_extracted')
         if time_extracted:
             try:
+                # pylint: disable=c-extension-no-member
                 time_extracted = ciso8601.parse_datetime(time_extracted)
             except:
                 LOGGER.warning("unable to parse time_extracted with ciso8601 library")
