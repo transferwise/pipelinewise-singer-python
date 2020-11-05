@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.1.4 (2020-11-05)
+  * Update pytz pin to wider range
+
 ## 1.1.3 (2020-06-11)
   * Bump jsonschema to 3.2.0
 
