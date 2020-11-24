@@ -26,6 +26,7 @@ from singer.messages import (
     RecordMessage,
     SchemaMessage,
     StateMessage,
+    BatchMessage,
     format_message,
     parse_message,
     write_message,
@@ -34,6 +35,7 @@ from singer.messages import (
     write_schema,
     write_state,
     write_version,
+    write_batch
 )
 
 from singer.transform import (

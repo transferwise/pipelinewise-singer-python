@@ -167,6 +167,51 @@ class ActivateVersionMessage(Message):
         }
 
 
+class BatchMessage(Message):
+    """ BATCH message (EXPERIMENTAL).
+
+    The BATCH message has these fields:
+
+      * stream (string) - The name of the stream.
+      * filepath (string) - The location of a batch file containing serialized records. e.g. '/tmp/users001.jsonl'.
+      * format (string, optional) - An indication of serialization format. If none is provided, 'jsonl' will be assumed. e.g. 'csv'.
+      * compression (string, optional) - An indication of file compression format. e.g. 'gzip'.
+      * batch_size (int, optional) - Number of records in this batch. e.g. 100000.
+
+    If file_properties are not provided, uncompressed jsonl files are assumed.
+
+    A BATCH record points to a collection of messages (from a single stream) serialized to disk,
+    and is implemented for performance reasons. Most Taps and Targets should not need to use
+    BATCH messages at all.
+
+    msg = singer.BatchMessage(
+        stream='users',
+        filepath='/tmp/users0001.jsonl'
+    )
+
+    """
+
+    def __init__(self, stream, filepath, format=None, compression=None, batch_size=None):
+        self.stream = stream
+        self.filepath = filepath
+        self.format = format or 'jsonl'
+        self.compression = compression
+        self.batch_size = batch_size
+
+    def asdict(self):
+        result = {
+            'type': 'BATCH',
+            'stream': self.stream,
+            'filepath': self.filepath,
+            'format': self.format
+        }
+        if self.compression is not None:
+            result['compression'] = self.compression
+        if self.batch_size is not None:
+            result['batch_size'] = self.batch_size
+        return result
+
+
 def _required_key(msg, k):
     if k not in msg:
         raise Exception("Message is missing required key '{}': {}".format(k, msg))
@@ -214,6 +259,14 @@ def parse_message(msg):
     elif msg_type == 'ACTIVATE_VERSION':
         return ActivateVersionMessage(stream=_required_key(obj, 'stream'),
                                       version=_required_key(obj, 'version'))
+
+    elif msg_type == 'BATCH':
+        return BatchMessage(stream=_required_key(obj, 'stream'),
+                            filepath=_required_key(obj, 'filepath'),
+                            format=_required_key(obj, 'format'),
+                            compression=obj.get('compression'),
+                            batch_size=obj.get('batch_size'))
+
     else:
         return None
 
@@ -285,3 +338,17 @@ def write_version(stream_name, version):
     write_version(stream, version)
     """
     write_message(ActivateVersionMessage(stream_name, version))
+
+def write_batch(
+    stream_name, filepath, format=None,
+    compression=None, batch_size=None
+):
+    """Write a batch message.
+
+    stream = 'users'
+    filepath = '/tmp/users0001.jsonl'
+    format = 'jsonl'
+    compression = None
+    batch_size = 100000
+    """
+    write_message(BatchMessage(stream_name, filepath, format, compression, batch_size))
