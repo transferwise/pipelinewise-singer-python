@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.2.0 (2020-12-01)
+  * Add BATCH message type
+
 ## 1.1.4 (2020-11-05)
   * Update pytz pin to wider range
 
