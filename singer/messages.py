@@ -173,8 +173,9 @@ class BatchMessage(Message):
     The BATCH message has these fields:
 
       * stream (string) - The name of the stream.
-      * filepath (string) - The location of a batch file containing serialized records. e.g. '/tmp/users001.jsonl'.
-      * format (string, optional) - An indication of serialization format. If none is provided, 'jsonl' will be assumed. e.g. 'csv'.
+      * filepath (string) - The location of a batch file. e.g. '/tmp/users001.jsonl'.
+      * format (string, optional) - An indication of serialization format.
+            If none is provided, 'jsonl' will be assumed. e.g. 'csv'.
       * compression (string, optional) - An indication of file compression format. e.g. 'gzip'.
       * batch_size (int, optional) - Number of records in this batch. e.g. 100000.
 
@@ -191,10 +192,10 @@ class BatchMessage(Message):
 
     """
 
-    def __init__(self, stream, filepath, format=None, compression=None, batch_size=None):
+    def __init__(self, stream, filepath, file_format=None, compression=None, batch_size=None):
         self.stream = stream
         self.filepath = filepath
-        self.format = format or 'jsonl'
+        self.format = file_format or 'jsonl'
         self.compression = compression
         self.batch_size = batch_size
 
@@ -263,7 +264,7 @@ def parse_message(msg):
     elif msg_type == 'BATCH':
         return BatchMessage(stream=_required_key(obj, 'stream'),
                             filepath=_required_key(obj, 'filepath'),
-                            format=_required_key(obj, 'format'),
+                            file_format=_required_key(obj, 'format'),
                             compression=obj.get('compression'),
                             batch_size=obj.get('batch_size'))
 
@@ -340,15 +341,15 @@ def write_version(stream_name, version):
     write_message(ActivateVersionMessage(stream_name, version))
 
 def write_batch(
-    stream_name, filepath, format=None,
+    stream_name, filepath, file_format=None,
     compression=None, batch_size=None
 ):
     """Write a batch message.
 
     stream = 'users'
     filepath = '/tmp/users0001.jsonl'
-    format = 'jsonl'
+    file_format = 'jsonl'
     compression = None
     batch_size = 100000
     """
-    write_message(BatchMessage(stream_name, filepath, format, compression, batch_size))
+    write_message(BatchMessage(stream_name, filepath, file_format, compression, batch_size))
