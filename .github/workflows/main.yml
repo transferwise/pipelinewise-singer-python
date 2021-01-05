@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8]
+    
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checking out repo
+        uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.container[1] }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install and upgrade dependencies
+        run: |
+          python -m pip install -U pip setuptools wheel
+          python3 -m pip install -U .[dev]
+
+      - name: Analysing the code with pylint
+        run: |
+          pylint singer --extension-pkg-whitelist=ciso8601 -d missing-docstring,broad-except,bare-except,too-many-return-statements,too-many-branches,too-many-arguments,no-else-return,too-few-public-methods,fixme,protected-access
+
+      - name: Runs tests with coverage
+        run: nosetests --with-doctest -v 
