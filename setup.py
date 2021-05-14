@@ -30,8 +30,8 @@ setup(name="pipelinewise-singer-python",
               'pylint',
               'ipython',
               'ipdb',
-              'nose'
-              'mypy'
+              'nose',
+              'mypy',
           ]
       },
       packages=['singer'],
