@@ -35,3 +35,6 @@ jobs:
 
       - name: Runs tests with coverage
         run: nosetests --with-doctest -v 
+
+      - name: Runs mypy linter and type checks
+        run: mypy singer
