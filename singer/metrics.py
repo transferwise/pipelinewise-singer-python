@@ -186,7 +186,7 @@ class Timer():  # pylint: disable=too-few-public-methods
 
     def elapsed(self) -> float:
         '''Return elapsed time'''
-        return time.time() - cast(float, self.start_time)
+        return time.time() - cast(float, self.start_time)  # Assumes not null
 
     def __exit__(self, exc_type, exc_value, traceback):
         if Tag.status not in self.tags:
