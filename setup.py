@@ -24,7 +24,6 @@ setup(name="pipelinewise-singer-python",
           'backoff==1.10.0',
           'ciso8601',
       ],
-      zip_safe=False,
       extras_require={
           'dev': [
               'pylint',
