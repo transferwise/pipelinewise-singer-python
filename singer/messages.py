@@ -1,4 +1,6 @@
 import sys
+from typing import cast, Dict, List, Any, Optional, Union
+from datetime import datetime
 
 import pytz
 import simplejson as json
@@ -11,10 +13,10 @@ LOGGER = get_logger()
 class Message():
     '''Base class for messages.'''
 
-    def asdict(self):  # pylint: disable=no-self-use
+    def asdict(self) -> dict:  # pylint: disable=no-self-use
         raise Exception('Not implemented')
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         return isinstance(other, Message) and self.asdict() == other.asdict()
 
     def __repr__(self):
@@ -89,7 +91,13 @@ class SchemaMessage(Message):
         key_properties=['id'])
 
     '''
-    def __init__(self, stream, schema, key_properties, bookmark_properties=None):
+    def __init__(
+        self,
+        stream: str,
+        schema: dict,
+        key_properties: Optional[List[str]],
+        bookmark_properties: Optional[List[str]] = None,
+    ) -> None:
         self.stream = stream
         self.schema = schema
         self.key_properties = key_properties
@@ -101,7 +109,7 @@ class SchemaMessage(Message):
 
         self.bookmark_properties = bookmark_properties
 
-    def asdict(self):
+    def asdict(self) -> dict:
         result = {
             'type': 'SCHEMA',
             'stream': self.stream,
@@ -124,10 +132,10 @@ class StateMessage(Message):
         value={'users': '2017-06-19T00:00:00'})
 
     '''
-    def __init__(self, value):
+    def __init__(self, value: dict) -> None:
         self.value = value
 
-    def asdict(self):
+    def asdict(self) -> dict:
         return {
             'type': 'STATE',
             'value': self.value
@@ -155,7 +163,7 @@ class ActivateVersionMessage(Message):
         version=2)
 
     '''
-    def __init__(self, stream, version):
+    def __init__(self, stream: str, version: int) -> None:
         self.stream = stream
         self.version = version
 
@@ -192,15 +200,22 @@ class BatchMessage(Message):
 
     """
 
-    def __init__(self, stream, filepath, file_format=None, compression=None, batch_size=None):
+    def __init__(
+        self,
+        stream: str,
+        filepath: str,
+        file_format: Optional[str] = None,
+        compression: Optional[str] = None,
+        batch_size: Optional[int] = None,
+    ) -> None:
         self.stream = stream
         self.filepath = filepath
         self.format = file_format or 'jsonl'
         self.compression = compression
         self.batch_size = batch_size
 
-    def asdict(self):
-        result = {
+    def asdict(self) -> dict:
+        result: Dict[str, Any] = {
             'type': 'BATCH',
             'stream': self.stream,
             'filepath': self.filepath,
@@ -213,14 +228,14 @@ class BatchMessage(Message):
         return result
 
 
-def _required_key(msg, k):
+def _required_key(msg: dict, k: str) -> Any:
     if k not in msg:
         raise Exception("Message is missing required key '{}': {}".format(k, msg))
 
     return msg[k]
 
 
-def parse_message(msg):
+def parse_message(msg: str) -> Optional[Message]:
     """Parse a message string into a Message object."""
 
     # We are not using Decimals for parsing here.
@@ -272,16 +287,19 @@ def parse_message(msg):
         return None
 
 
-def format_message(message):
+def format_message(message: Message) -> str:
     return json.dumps(message.asdict(), use_decimal=True)
 
 
-def write_message(message):
+def write_message(message: Message) -> None:
     sys.stdout.write(format_message(message) + '\n')
     sys.stdout.flush()
 
 
-def write_record(stream_name, record, stream_alias=None, time_extracted=None):
+def write_record(
+    stream_name: str, record: dict, stream_alias: Optional[str] = None,
+    time_extracted: Union[datetime, str, None] = None,
+) -> None:
     """Write a single record for the given stream.
 
     write_record("users", {"id": 2, "email": "mike@stitchdata.com"})
@@ -291,7 +309,7 @@ def write_record(stream_name, record, stream_alias=None, time_extracted=None):
                                 time_extracted=time_extracted))
 
 
-def write_records(stream_name, records):
+def write_records(stream_name: str, records: List[dict]) -> None:
     """Write a list of records for the given stream.
 
     chris = {"id": 1, "email": "chris@stitchdata.com"}
@@ -302,7 +320,10 @@ def write_records(stream_name, records):
         write_record(stream_name, record)
 
 
-def write_schema(stream_name, schema, key_properties, bookmark_properties=None, stream_alias=None):
+def write_schema(
+    stream_name: str, schema: dict, key_properties: List[str],
+    bookmark_properties: Optional[List[str]] = None, stream_alias: Optional[str] = None
+) -> None:
     """Write a schema message.
 
     stream = 'test'
@@ -323,7 +344,7 @@ def write_schema(stream_name, schema, key_properties, bookmark_properties=None, 
             bookmark_properties=bookmark_properties))
 
 
-def write_state(value):
+def write_state(value: dict) -> None:
     """Write a state message.
 
     write_state({'last_updated_at': '2017-02-14T09:21:00'})
@@ -331,7 +352,7 @@ def write_state(value):
     write_message(StateMessage(value=value))
 
 
-def write_version(stream_name, version):
+def write_version(stream_name: str, version: int) -> None:
     """Write an activate version message.
 
     stream = 'test'
@@ -341,9 +362,9 @@ def write_version(stream_name, version):
     write_message(ActivateVersionMessage(stream_name, version))
 
 def write_batch(
-    stream_name, filepath, file_format=None,
-    compression=None, batch_size=None
-):
+    stream_name: str, filepath: str, file_format: Optional[str] = None,
+    compression: Optional[str] = None, batch_size: Optional[int] = None
+) -> None:
     """Write a batch message.
 
     stream = 'users'
