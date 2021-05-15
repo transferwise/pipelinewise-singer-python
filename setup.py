@@ -37,7 +37,7 @@ setup(name="pipelinewise-singer-python",
       packages=['singer'],
       package_data={
           'singer': [
-              'logging.conf', 'py.typed'
+              'logging.conf'
           ]
       },
       include_package_data=True
