@@ -3,12 +3,15 @@ import collections
 import datetime
 import functools
 import json
+from logging import Logger
 import time
+from typing import Union, List
 from warnings import warn
 
 import dateutil.parser
 import pytz
 import backoff as backoff_module
+from requests import Response
 
 from singer.catalog import Catalog
 
@@ -16,17 +19,17 @@ DATETIME_PARSE = "%Y-%m-%dT%H:%M:%SZ"
 DATETIME_FMT = "%04Y-%m-%dT%H:%M:%S.%fZ"
 DATETIME_FMT_SAFE = "%Y-%m-%dT%H:%M:%S.%fZ"
 
-def now():
+def now() -> datetime.datetime:
     return datetime.datetime.utcnow().replace(tzinfo=pytz.UTC)
 
-def strptime_with_tz(dtime):
+def strptime_with_tz(dtime: str) -> datetime.datetime:
     d_object = dateutil.parser.parse(dtime)
     if d_object.tzinfo is None:
         return d_object.replace(tzinfo=pytz.UTC)
 
     return d_object
 
-def strptime(dtime):
+def strptime(dtime: str) -> datetime.datetime:
     """DEPRECATED Use strptime_to_utc instead.
 
     Parse DTIME according to DATETIME_PARSE without TZ safety.
@@ -57,14 +60,14 @@ def strptime(dtime):
 
     return datetime.datetime.strptime(dtime, DATETIME_PARSE)
 
-def strptime_to_utc(dtimestr):
+def strptime_to_utc(dtimestr: str) -> datetime.datetime:
     d_object = dateutil.parser.parse(dtimestr)
     if d_object.tzinfo is None:
         return d_object.replace(tzinfo=pytz.UTC)
     else:
         return d_object.astimezone(tz=pytz.UTC)
 
-def strftime(dtime, format_str=DATETIME_FMT):
+def strftime(dtime: datetime.datetime, format_str: str = DATETIME_FMT) -> str:
     if dtime.utcoffset() != datetime.timedelta(0):
         raise Exception("datetime must be pegged at UTC tzoneinfo")
 
@@ -78,7 +81,7 @@ def strftime(dtime, format_str=DATETIME_FMT):
 
     return dt_str
 
-def ratelimit(limit, every):
+def ratelimit(limit: int, every: int):
     def limitdecorator(func):
         times = collections.deque()
 
@@ -109,7 +112,9 @@ def load_json(path):
         return json.load(fil)
 
 
-def update_state(state, entity, dtime):
+def update_state(
+    state: dict, entity, dtime: Union[str, datetime.datetime]
+) -> None:
     if dtime is None:
         return
 
@@ -184,7 +189,7 @@ def parse_args(required_config_keys):
     return args
 
 
-def check_config(config, required_keys):
+def check_config(config: dict, required_keys: List[str]) -> None:
     missing_keys = [key for key in required_keys if key not in config]
     if missing_keys:
         raise Exception("Config is missing required keys: {}".format(missing_keys))
@@ -205,21 +210,23 @@ def backoff(exceptions, giveup):
         factor=2)
 
 
-def exception_is_4xx(exception):
+def exception_is_4xx(exception: Exception) -> bool:
     """Returns True if exception is in the 4xx range."""
     if not hasattr(exception, "response"):
         return False
 
-    if exception.response is None:
+    response: Response = exception.response  # type: ignore
+
+    if response is None:
         return False
 
-    if not hasattr(exception.response, "status_code"):
+    if not hasattr(response, "status_code"):
         return False
 
-    return 400 <= exception.response.status_code < 500
+    return 400 <= response.status_code < 500
 
 
-def handle_top_exception(logger):
+def handle_top_exception(logger: Logger):
     """A decorator that will catch exceptions and log the exception's message
     as a CRITICAL log."""
     def decorator(fnc):
@@ -234,7 +241,9 @@ def handle_top_exception(logger):
     return decorator
 
 
-def should_sync_field(inclusion, selected, default=False):
+def should_sync_field(
+    inclusion: str, selected: bool, default: bool = False
+) -> bool:
     """
     Returns True if a field should be synced.
 
