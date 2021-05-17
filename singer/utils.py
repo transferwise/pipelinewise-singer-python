@@ -5,13 +5,12 @@ import functools
 import json
 from logging import Logger
 import time
-from typing import Union, List
+from typing import Callable, Union, List, cast, Iterable
 from warnings import warn
 
 import dateutil.parser
 import pytz
 import backoff as backoff_module
-from requests import Response
 
 from singer.catalog import Catalog
 
@@ -81,7 +80,7 @@ def strftime(dtime: datetime.datetime, format_str: str = DATETIME_FMT) -> str:
 
     return dt_str
 
-def ratelimit(limit: int, every: int):
+def ratelimit(limit: int, every: int) -> Callable:
     def limitdecorator(func):
         times = collections.deque()
 
@@ -102,14 +101,14 @@ def ratelimit(limit: int, every: int):
     return limitdecorator
 
 
-def chunk(array, num):
+def chunk(array: list, num: int) -> Iterable[list]:
     for i in range(0, len(array), num):
         yield array[i:i + num]
 
 
-def load_json(path):
+def load_json(path) -> Union[dict, list]:
     with open(path) as fil:
-        return json.load(fil)
+        return cast(dict, json.load(fil))
 
 
 def update_state(
@@ -128,7 +127,7 @@ def update_state(
         state[entity] = dtime
 
 
-def parse_args(required_config_keys):
+def parse_args(required_config_keys: List[str]) -> argparse.Namespace:
     '''Parse standard command-line args.
 
     Parses the command-line arguments mentioned in the SPEC and the
@@ -195,19 +194,23 @@ def check_config(config: dict, required_keys: List[str]) -> None:
         raise Exception("Config is missing required keys: {}".format(missing_keys))
 
 
-def backoff(exceptions, giveup):
+def backoff(exceptions, giveup) -> Callable:
     """Decorates a function to retry up to 5 times using an exponential backoff
     function.
 
     exceptions is a tuple of exception classes that are retried
     giveup is a function that accepts the exception and returns True to retry
     """
-    return backoff_module.on_exception(
-        backoff_module.expo,
-        exceptions,
-        max_tries=5,
-        giveup=giveup,
-        factor=2)
+    return cast(
+        Callable,
+        backoff_module.on_exception(
+            backoff_module.expo,
+            exceptions,
+            max_tries=5,
+            giveup=giveup,
+            factor=2
+        )
+    )
 
 
 def exception_is_4xx(exception: Exception) -> bool:
@@ -215,7 +218,7 @@ def exception_is_4xx(exception: Exception) -> bool:
     if not hasattr(exception, "response"):
         return False
 
-    response: Response = exception.response  # type: ignore
+    response = exception.response  # type: ignore  # Duck-typed requests.Response
 
     if response is None:
         return False
@@ -223,13 +226,13 @@ def exception_is_4xx(exception: Exception) -> bool:
     if not hasattr(response, "status_code"):
         return False
 
-    return 400 <= response.status_code < 500
+    return 400 <= cast(int, response.status_code) < 500
 
 
-def handle_top_exception(logger: Logger):
+def handle_top_exception(logger: Logger) -> Callable:
     """A decorator that will catch exceptions and log the exception's message
     as a CRITICAL log."""
-    def decorator(fnc):
+    def decorator(fnc: Callable) -> Callable:
         @functools.wraps(fnc)
         def wrapped(*args, **kwargs):
             try:
