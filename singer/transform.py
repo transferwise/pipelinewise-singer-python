@@ -1,7 +1,7 @@
 import datetime
 import logging
 import re
-from typing import List, Optional, Union, Any, Tuple
+from typing import List, Optional, Set, Union, Any, Tuple
 from jsonschema import RefResolver
 
 import singer.metadata
@@ -91,9 +91,9 @@ class Transformer:
     ) -> None:
         self.integer_datetime_fmt = integer_datetime_fmt
         self.pre_hook = pre_hook
-        self.removed = set()
-        self.filtered = set()
-        self.errors = []
+        self.removed: Set[Any] = set()
+        self.filtered: Set[Any] = set()
+        self.errors: List[Any] = []
 
     def log_warning(self) -> None:
         if self.filtered:
