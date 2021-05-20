@@ -1,8 +1,8 @@
 import datetime
 import logging
 import re
-from jsonschema import RefResolver
 from typing import List, Optional, Union, Any, Tuple
+from jsonschema import RefResolver
 
 import singer.metadata
 from singer.logger import get_logger
