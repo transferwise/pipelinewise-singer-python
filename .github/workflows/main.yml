@@ -36,4 +36,4 @@ jobs:
         run: nosetests --with-doctest -v 
 
       - name: Runs mypy linter and type checks
-        run: mypy singer
+        run: mypy --config-file ./mypy.ini singer
