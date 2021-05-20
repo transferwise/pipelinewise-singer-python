@@ -91,9 +91,9 @@ class Transformer:
     ) -> None:
         self.integer_datetime_fmt = integer_datetime_fmt
         self.pre_hook = pre_hook
-        self.removed: Set[Any] = set()
-        self.filtered: Set[Any] = set()
-        self.errors: List[Any] = []
+        self.removed: Set[str] = set()
+        self.filtered: Set[str] = set()
+        self.errors: List[Error] = []
 
     def log_warning(self) -> None:
         if self.filtered:
