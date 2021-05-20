@@ -1,5 +1,5 @@
 import sys
-from typing import cast, Dict, List, Any, Optional, Union
+from typing import Dict, List, Any, Optional, Union
 from datetime import datetime
 
 import pytz
