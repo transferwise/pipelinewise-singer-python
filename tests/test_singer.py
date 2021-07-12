@@ -92,8 +92,11 @@ class TestSinger(unittest.TestCase):
 
     def test_parse_message_batch_good(self):
         message = singer.parse_message(
-            '{"type": "BATCH", "stream": "users", "filepath": "/tmp/users0001.jsonl", "format": "jsonl"}')
-        self.assertEqual(message, singer.BatchMessage(stream='users', filepath='/tmp/users0001.jsonl'))
+            '{"type": "BATCH", "stream": "users", "filepath": "/tmp/users0001.jsonl", "format": "jsonl", "time_extracted": "1970-01-02T00:00:00.000Z"}')
+        self.assertEqual(
+            message,
+            singer.BatchMessage(stream='users', filepath='/tmp/users0001.jsonl', time_extracted=dateutil.parser.parse("1970-01-02T00:00:00.000Z"))
+        )
 
     def test_parse_message_batch_missing_value(self):
         with self.assertRaises(Exception):
