@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.3.0 (2021-08-12)
+  * Added `time_extracted` to BATCH message type
+
 ## 1.2.0 (2020-12-01)
   * Add BATCH message type
 
