@@ -178,6 +178,7 @@ class BatchMessage(Message):
             If none is provided, 'jsonl' will be assumed. e.g. 'csv'.
       * compression (string, optional) - An indication of file compression format. e.g. 'gzip'.
       * batch_size (int, optional) - Number of records in this batch. e.g. 100000.
+      * time_extracted (datetime, optional) - TZ-aware datetime with batch extraction time.
 
     If file_properties are not provided, uncompressed jsonl files are assumed.
 
@@ -192,12 +193,19 @@ class BatchMessage(Message):
 
     """
 
-    def __init__(self, stream, filepath, file_format=None, compression=None, batch_size=None):
+    def __init__(
+        self, stream, filepath, file_format=None, compression=None,
+        batch_size=None, time_extracted=None
+    ):
         self.stream = stream
         self.filepath = filepath
         self.format = file_format or 'jsonl'
         self.compression = compression
         self.batch_size = batch_size
+        self.time_extracted = time_extracted
+        if time_extracted and not time_extracted.tzinfo:
+            raise ValueError("'time_extracted' must be either None " +
+                             "or an aware datetime (with a time zone)")
 
     def asdict(self):
         result = {
@@ -210,6 +218,9 @@ class BatchMessage(Message):
             result['compression'] = self.compression
         if self.batch_size is not None:
             result['batch_size'] = self.batch_size
+        if self.time_extracted:
+            as_utc = self.time_extracted.astimezone(pytz.utc)
+            result['time_extracted'] = u.strftime(as_utc)
         return result
 
 
@@ -262,11 +273,22 @@ def parse_message(msg):
                                       version=_required_key(obj, 'version'))
 
     elif msg_type == 'BATCH':
-        return BatchMessage(stream=_required_key(obj, 'stream'),
-                            filepath=_required_key(obj, 'filepath'),
-                            file_format=_required_key(obj, 'format'),
-                            compression=obj.get('compression'),
-                            batch_size=obj.get('batch_size'))
+        time_extracted = obj.get('time_extracted')
+        if time_extracted:
+            try:
+                time_extracted = ciso8601.parse_datetime(time_extracted)
+            except:
+                LOGGER.warning("unable to parse time_extracted with ciso8601 library")
+                time_extracted = None
+
+        return BatchMessage(
+            stream=_required_key(obj, 'stream'),
+            filepath=_required_key(obj, 'filepath'),
+            file_format=_required_key(obj, 'format'),
+            compression=obj.get('compression'),
+            batch_size=obj.get('batch_size'),
+            time_extracted=time_extracted
+        )
 
     else:
         return None
@@ -342,7 +364,7 @@ def write_version(stream_name, version):
 
 def write_batch(
     stream_name, filepath, file_format=None,
-    compression=None, batch_size=None
+    compression=None, batch_size=None, time_extracted=None
 ):
     """Write a batch message.
 
@@ -352,4 +374,13 @@ def write_batch(
     compression = None
     batch_size = 100000
     """
-    write_message(BatchMessage(stream_name, filepath, file_format, compression, batch_size))
+    write_message(
+        BatchMessage(
+            stream=stream_name,
+            filepath=filepath,
+            file_format=file_format,
+            compression=compression,
+            batch_size=batch_size,
+            time_extracted=time_extracted
+        )
+    )
