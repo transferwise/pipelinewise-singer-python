@@ -247,7 +247,7 @@ def parse_message(msg):
         if time_extracted:
             try:
                 time_extracted = ciso8601.parse_datetime(time_extracted)
-            except:
+            except Exception:
                 LOGGER.warning("unable to parse time_extracted with ciso8601 library")
                 time_extracted = None
 
@@ -258,26 +258,25 @@ def parse_message(msg):
                              version=obj.get('version'),
                              time_extracted=time_extracted)
 
-
-    elif msg_type == 'SCHEMA':
+    if msg_type == 'SCHEMA':
         return SchemaMessage(stream=_required_key(obj, 'stream'),
                              schema=_required_key(obj, 'schema'),
                              key_properties=_required_key(obj, 'key_properties'),
                              bookmark_properties=obj.get('bookmark_properties'))
 
-    elif msg_type == 'STATE':
+    if msg_type == 'STATE':
         return StateMessage(value=_required_key(obj, 'value'))
 
-    elif msg_type == 'ACTIVATE_VERSION':
+    if msg_type == 'ACTIVATE_VERSION':
         return ActivateVersionMessage(stream=_required_key(obj, 'stream'),
                                       version=_required_key(obj, 'version'))
 
-    elif msg_type == 'BATCH':
+    if msg_type == 'BATCH':
         time_extracted = obj.get('time_extracted')
         if time_extracted:
             try:
                 time_extracted = ciso8601.parse_datetime(time_extracted)
-            except:
+            except Exception:
                 LOGGER.warning("unable to parse time_extracted with ciso8601 library")
                 time_extracted = None
 
@@ -290,8 +289,7 @@ def parse_message(msg):
             time_extracted=time_extracted
         )
 
-    else:
-        return None
+    return None
 
 
 def format_message(message):

@@ -61,8 +61,8 @@ def strptime_to_utc(dtimestr):
     d_object = dateutil.parser.parse(dtimestr)
     if d_object.tzinfo is None:
         return d_object.replace(tzinfo=pytz.UTC)
-    else:
-        return d_object.astimezone(tz=pytz.UTC)
+
+    return d_object.astimezone(tz=pytz.UTC)
 
 def strftime(dtime, format_str=DATETIME_FMT):
     if dtime.utcoffset() != datetime.timedelta(0):

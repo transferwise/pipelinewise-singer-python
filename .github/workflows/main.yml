@@ -31,7 +31,7 @@ jobs:
 
       - name: Analysing the code with pylint
         run: |
-          pylint singer --extension-pkg-whitelist=ciso8601 -d missing-docstring,broad-except,bare-except,too-many-return-statements,too-many-branches,too-many-arguments,no-else-return,too-few-public-methods,fixme,protected-access
+          pylint singer
 
       - name: Runs tests with coverage
         run: nosetests --with-doctest -v 
