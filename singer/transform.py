@@ -43,8 +43,7 @@ class SchemaMismatch(Exception):
 
         else:
             estrs = [e.tostr() for e in errors]
-            msg = "Errors during transform\n\t{}".format("\n\t".join(estrs))
-            msg += "\n\n\nErrors during transform: [{}]".format(", ".join(estrs))
+            msg = f'Errors during transform:{", ".join(estrs)}'
 
         super().__init__(msg)
 
@@ -66,16 +65,16 @@ class Error:
         path = ".".join(map(str, self.path))
         if self.schema:
             if self.logging_level >= logging.INFO:
-                msg = "data does not match {}".format(self.schema)
+                msg = f"data does not match {self.schema}"
             else:
-                msg = "does not match {}".format(self.schema)
+                msg = f"does not match {self.schema}"
         else:
             msg = "not in schema"
 
         if self.logging_level >= logging.INFO:
-            output = "{}: {}".format(path, msg)
+            output = f"{path}: {msg}"
         else:
-            output = "{}: {} {}".format(path, self.data, msg)
+            output = f"{path}: {self.data} {msg}"
         return output
 
 
