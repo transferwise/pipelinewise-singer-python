@@ -29,7 +29,8 @@ setup(name="pipelinewise-singer-python",
               'pylint==2.11.1',
               'ipython',
               'ipdb',
-              'nose'
+              'nose',
+              'unify==0.5'
           ]
       },
       packages=['singer'],

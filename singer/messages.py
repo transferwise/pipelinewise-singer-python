@@ -18,9 +18,9 @@ class Message():
         return isinstance(other, Message) and self.asdict() == other.asdict()
 
     def __repr__(self):
-        pairs = [f"{k}={v}" for k, v in self.asdict().items()]
-        attrstr = ", ".join(pairs)
-        return f"{self.__class__.__name__}({attrstr})"
+        pairs = [f'{k}={v}' for k, v in self.asdict().items()]
+        attrstr = ', '.join(pairs)
+        return f'{self.__class__.__name__}({attrstr})'
 
     def __str__(self):
         return str(self.asdict())
@@ -50,7 +50,7 @@ class RecordMessage(Message):
         self.time_extracted = time_extracted
         if time_extracted and not time_extracted.tzinfo:
             raise ValueError("'time_extracted' must be either None " +
-                             "or an aware datetime (with a time zone)")
+                             'or an aware datetime (with a time zone)')
 
     def asdict(self):
         result = {
@@ -97,7 +97,7 @@ class SchemaMessage(Message):
         if isinstance(bookmark_properties, (str, bytes)):
             bookmark_properties = [bookmark_properties]
         if bookmark_properties and not isinstance(bookmark_properties, list):
-            raise Exception("bookmark_properties must be a string or list of strings")
+            raise Exception('bookmark_properties must be a string or list of strings')
 
         self.bookmark_properties = bookmark_properties
 
@@ -205,7 +205,7 @@ class BatchMessage(Message):
         self.time_extracted = time_extracted
         if time_extracted and not time_extracted.tzinfo:
             raise ValueError("'time_extracted' must be either None " +
-                             "or an aware datetime (with a time zone)")
+                             'or an aware datetime (with a time zone)')
 
     def asdict(self):
         result = {
@@ -248,7 +248,7 @@ def parse_message(msg):
             try:
                 time_extracted = ciso8601.parse_datetime(time_extracted)
             except Exception:
-                LOGGER.warning("unable to parse time_extracted with ciso8601 library")
+                LOGGER.warning('unable to parse time_extracted with ciso8601 library')
                 time_extracted = None
 
 
@@ -277,7 +277,7 @@ def parse_message(msg):
             try:
                 time_extracted = ciso8601.parse_datetime(time_extracted)
             except Exception:
-                LOGGER.warning("unable to parse time_extracted with ciso8601 library")
+                LOGGER.warning('Unable to parse time_extracted with ciso8601 library')
                 time_extracted = None
 
         return BatchMessage(
@@ -333,7 +333,7 @@ def write_schema(stream_name, schema, key_properties, bookmark_properties=None, 
     if isinstance(key_properties, (str, bytes)):
         key_properties = [key_properties]
     if not isinstance(key_properties, list):
-        raise Exception("key_properties must be a string or list of strings")
+        raise Exception('key_properties must be a string or list of strings')
 
     write_message(
         SchemaMessage(
