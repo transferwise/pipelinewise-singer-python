@@ -18,9 +18,9 @@ class Message():
         return isinstance(other, Message) and self.asdict() == other.asdict()
 
     def __repr__(self):
-        pairs = ["{}={}".format(k, v) for k, v in self.asdict().items()]
-        attrstr = ", ".join(pairs)
-        return "{}({})".format(self.__class__.__name__, attrstr)
+        pairs = [f'{k}={v}' for k, v in self.asdict().items()]
+        attrstr = ', '.join(pairs)
+        return f'{self.__class__.__name__}({attrstr})'
 
     def __str__(self):
         return str(self.asdict())
@@ -50,7 +50,7 @@ class RecordMessage(Message):
         self.time_extracted = time_extracted
         if time_extracted and not time_extracted.tzinfo:
             raise ValueError("'time_extracted' must be either None " +
-                             "or an aware datetime (with a time zone)")
+                             'or an aware datetime (with a time zone)')
 
     def asdict(self):
         result = {
@@ -97,7 +97,7 @@ class SchemaMessage(Message):
         if isinstance(bookmark_properties, (str, bytes)):
             bookmark_properties = [bookmark_properties]
         if bookmark_properties and not isinstance(bookmark_properties, list):
-            raise Exception("bookmark_properties must be a string or list of strings")
+            raise Exception('bookmark_properties must be a string or list of strings')
 
         self.bookmark_properties = bookmark_properties
 
@@ -205,7 +205,7 @@ class BatchMessage(Message):
         self.time_extracted = time_extracted
         if time_extracted and not time_extracted.tzinfo:
             raise ValueError("'time_extracted' must be either None " +
-                             "or an aware datetime (with a time zone)")
+                             'or an aware datetime (with a time zone)')
 
     def asdict(self):
         result = {
@@ -226,7 +226,7 @@ class BatchMessage(Message):
 
 def _required_key(msg, k):
     if k not in msg:
-        raise Exception("Message is missing required key '{}': {}".format(k, msg))
+        raise Exception(f"Message is missing required key '{k}': {msg}")
 
     return msg[k]
 
@@ -247,8 +247,8 @@ def parse_message(msg):
         if time_extracted:
             try:
                 time_extracted = ciso8601.parse_datetime(time_extracted)
-            except:
-                LOGGER.warning("unable to parse time_extracted with ciso8601 library")
+            except Exception:
+                LOGGER.warning('unable to parse time_extracted with ciso8601 library')
                 time_extracted = None
 
 
@@ -258,27 +258,26 @@ def parse_message(msg):
                              version=obj.get('version'),
                              time_extracted=time_extracted)
 
-
-    elif msg_type == 'SCHEMA':
+    if msg_type == 'SCHEMA':
         return SchemaMessage(stream=_required_key(obj, 'stream'),
                              schema=_required_key(obj, 'schema'),
                              key_properties=_required_key(obj, 'key_properties'),
                              bookmark_properties=obj.get('bookmark_properties'))
 
-    elif msg_type == 'STATE':
+    if msg_type == 'STATE':
         return StateMessage(value=_required_key(obj, 'value'))
 
-    elif msg_type == 'ACTIVATE_VERSION':
+    if msg_type == 'ACTIVATE_VERSION':
         return ActivateVersionMessage(stream=_required_key(obj, 'stream'),
                                       version=_required_key(obj, 'version'))
 
-    elif msg_type == 'BATCH':
+    if msg_type == 'BATCH':
         time_extracted = obj.get('time_extracted')
         if time_extracted:
             try:
                 time_extracted = ciso8601.parse_datetime(time_extracted)
-            except:
-                LOGGER.warning("unable to parse time_extracted with ciso8601 library")
+            except Exception:
+                LOGGER.warning('Unable to parse time_extracted with ciso8601 library')
                 time_extracted = None
 
         return BatchMessage(
@@ -290,8 +289,7 @@ def parse_message(msg):
             time_extracted=time_extracted
         )
 
-    else:
-        return None
+    return None
 
 
 def format_message(message):
@@ -335,7 +333,7 @@ def write_schema(stream_name, schema, key_properties, bookmark_properties=None, 
     if isinstance(key_properties, (str, bytes)):
         key_properties = [key_properties]
     if not isinstance(key_properties, list):
-        raise Exception("key_properties must be a string or list of strings")
+        raise Exception('key_properties must be a string or list of strings')
 
     write_message(
         SchemaMessage(

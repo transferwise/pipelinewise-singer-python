@@ -9,9 +9,9 @@ from singer.utils import (strftime, strptime_to_utc)
 
 LOGGER = get_logger()
 
-NO_INTEGER_DATETIME_PARSING = "no-integer-datetime-parsing"
-UNIX_SECONDS_INTEGER_DATETIME_PARSING = "unix-seconds-integer-datetime-parsing"
-UNIX_MILLISECONDS_INTEGER_DATETIME_PARSING = "unix-milliseconds-integer-datetime-parsing"
+NO_INTEGER_DATETIME_PARSING = 'no-integer-datetime-parsing'
+UNIX_SECONDS_INTEGER_DATETIME_PARSING = 'unix-seconds-integer-datetime-parsing'
+UNIX_MILLISECONDS_INTEGER_DATETIME_PARSING = 'unix-milliseconds-integer-datetime-parsing'
 
 VALID_DATETIME_FORMATS = [
     NO_INTEGER_DATETIME_PARSING,
@@ -24,7 +24,7 @@ def string_to_datetime(value):
     try:
         return strftime(strptime_to_utc(value))
     except Exception as ex:
-        LOGGER.warning("%s, (%s)", ex, value)
+        LOGGER.warning('%s, (%s)', ex, value)
         return None
 
 
@@ -39,20 +39,19 @@ def unix_seconds_to_datetime(value):
 class SchemaMismatch(Exception):
     def __init__(self, errors):
         if not errors:
-            msg = "An error occured during transform that was not a schema mismatch"
+            msg = 'An error occured during transform that was not a schema mismatch'
 
         else:
             estrs = [e.tostr() for e in errors]
-            msg = "Errors during transform\n\t{}".format("\n\t".join(estrs))
-            msg += "\n\n\nErrors during transform: [{}]".format(", ".join(estrs))
+            msg = f'Errors during transform:{", ".join(estrs)}'
 
         super().__init__(msg)
 
 class SchemaKey:
-    ref = "$ref"
-    items = "items"
-    properties = "properties"
-    pattern_properties = "patternProperties"
+    ref = '$ref'
+    items = 'items'
+    properties = 'properties'
+    pattern_properties = 'patternProperties'
     any_of = 'anyOf'
 
 class Error:
@@ -63,19 +62,19 @@ class Error:
         self.logging_level = logging_level
 
     def tostr(self):
-        path = ".".join(map(str, self.path))
+        path = '.'.join(map(str, self.path))
         if self.schema:
             if self.logging_level >= logging.INFO:
-                msg = "data does not match {}".format(self.schema)
+                msg = f'data does not match {self.schema}'
             else:
-                msg = "does not match {}".format(self.schema)
+                msg = f'does not match {self.schema}'
         else:
-            msg = "not in schema"
+            msg = 'not in schema'
 
         if self.logging_level >= logging.INFO:
-            output = "{}: {}".format(path, msg)
+            output = f'{path}: {msg}'
         else:
-            output = "{}: {} {}".format(path, self.data, msg)
+            output = f'{path}: {self.data} {msg}'
         return output
 
 
@@ -89,20 +88,20 @@ class Transformer:
 
     def log_warning(self):
         if self.filtered:
-            LOGGER.debug("Filtered %s paths during transforms "
-                         "as they were unsupported or not selected:\n\t%s",
+            LOGGER.debug('Filtered %s paths during transforms '
+                         'as they were unsupported or not selected:\n\t%s',
                          len(self.filtered),
-                         "\n\t".join(sorted(self.filtered)))
+                         '\n\t'.join(sorted(self.filtered)))
             # Output list format to parse for reporting
-            LOGGER.debug("Filtered paths list: %s",
+            LOGGER.debug('Filtered paths list: %s',
                          sorted(self.filtered))
 
         if self.removed:
-            LOGGER.debug("Removed %s paths during transforms:\n\t%s",
+            LOGGER.debug('Removed %s paths during transforms:\n\t%s',
                          len(self.removed),
-                         "\n\t".join(sorted(self.removed)))
+                         '\n\t'.join(sorted(self.removed)))
             # Output list format to parse for reporting
-            LOGGER.debug("Removed paths list: %s", sorted(self.removed))
+            LOGGER.debug('Removed paths list: %s', sorted(self.removed))
 
     def __enter__(self):
         return self
@@ -142,20 +141,20 @@ class Transformer:
         return transformed_data
 
     def transform_recur(self, data, schema, path):
-        if "anyOf" in schema:
+        if 'anyOf' in schema:
             return self._transform_anyof(data, schema, path)
 
-        if "type" not in schema:
+        if 'type' not in schema:
             # indicates no typing information so don't bother transforming it
             return True, data
 
-        types = schema["type"]
+        types = schema['type']
         if not isinstance(types, list):
             types = [types]
 
-        if "null" in types:
-            types.remove("null")
-            types.append("null")
+        if 'null' in types:
+            types.remove('null')
+            types.append('null')
 
         for typ in types:
             success, transformed_data = self._transform(data, typ, schema, path)
@@ -206,7 +205,7 @@ class Transformer:
                 # with discovery but rather than failing the run because
                 # new data was added we'd rather continue the sync and
                 # allow customers to indicate that they want the new data.
-                self.removed.add(".".join(map(str, path + [key])))
+                self.removed.add('.'.join(map(str, path + [key])))
 
         return all(successes), result
 
@@ -226,88 +225,87 @@ class Transformer:
         return all(successes), result
 
     def _transform_datetime(self, value):
-        if value is None or value == "":
+        if value is None or value == '':
             return None # Short circuit in the case of null or empty string
 
         if self.integer_datetime_fmt not in VALID_DATETIME_FORMATS:
-            raise Exception("Invalid integer datetime parsing option")
+            raise Exception('Invalid integer datetime parsing option')
 
         if self.integer_datetime_fmt == NO_INTEGER_DATETIME_PARSING:
             return string_to_datetime(value)
-        else:
-            try:
-                if self.integer_datetime_fmt == UNIX_SECONDS_INTEGER_DATETIME_PARSING:
-                    return unix_seconds_to_datetime(value)
-                else:
-                    return unix_milliseconds_to_datetime(value)
-            except:
-                return string_to_datetime(value)
+
+        try:
+            if self.integer_datetime_fmt == UNIX_SECONDS_INTEGER_DATETIME_PARSING:
+                return unix_seconds_to_datetime(value)
+
+            return unix_milliseconds_to_datetime(value)
+        except Exception:
+            return string_to_datetime(value)
 
     def _transform(self, data, typ, schema, path):
         if self.pre_hook:
             data = self.pre_hook(data, typ, schema)
 
-        if typ == "null":
-            if data is None or data == "":
+        if typ == 'null':
+            if data is None or data == '':
                 return True, None
-            else:
-                return False, None
 
-        elif schema.get("format") == "date-time":
+            return False, None
+
+        if schema.get('format') == 'date-time':
             data = self._transform_datetime(data)
             if data is None:
                 return False, None
 
             return True, data
 
-        elif typ == "object":
+        if typ == 'object':
             # Objects do not necessarily specify properties
             return self._transform_object(data,
-                                          schema.get("properties", {}),
+                                          schema.get('properties', {}),
                                           path,
                                           schema.get(SchemaKey.pattern_properties))
 
-        elif typ == "array":
-            return self._transform_array(data, schema["items"], path)
+        if typ == 'array':
+            return self._transform_array(data, schema['items'], path)
 
-        elif typ == "string":
+        if typ == 'string':
             if data is not None:
                 try:
                     return True, str(data)
-                except:
+                except Exception:
                     return False, None
             else:
                 return False, None
 
-        elif typ == "integer":
+        if typ == 'integer':
             if isinstance(data, str):
-                data = data.replace(",", "")
+                data = data.replace(',', '')
 
             try:
                 return True, int(data)
-            except:
+            except Exception:
                 return False, None
 
-        elif typ == "number":
+        if typ == 'number':
             if isinstance(data, str):
-                data = data.replace(",", "")
+                data = data.replace(',', '')
 
             try:
                 return True, float(data)
-            except:
+            except Exception:
                 return False, None
 
-        elif typ == "boolean":
-            if isinstance(data, str) and data.lower() == "false":
+        if typ == 'boolean':
+            if isinstance(data, str) and data.lower() == 'false':
                 return True, False
 
             try:
                 return True, bool(data)
-            except:
+            except Exception:
                 return False, None
 
-        else:
-            return False, None
+        return False, None
 
 
 def transform(data, schema, integer_datetime_fmt=NO_INTEGER_DATETIME_PARSING,
@@ -354,7 +352,7 @@ def resolve_schema_references(schema, refs=None):
         schema
     '''
     refs = refs or {}
-    return _resolve_schema_references(schema, RefResolver("", schema, store=refs))
+    return _resolve_schema_references(schema, RefResolver('', schema, store=refs))
 
 def _resolve_schema_references(schema, resolver):
     if SchemaKey.ref in schema:

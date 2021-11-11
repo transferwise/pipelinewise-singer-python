@@ -26,10 +26,11 @@ setup(name="pipelinewise-singer-python",
       ],
       extras_require={
           'dev': [
-              'pylint',
+              'pylint==2.11.1',
               'ipython',
               'ipdb',
-              'nose'
+              'nose',
+              'unify==0.5'
           ]
       },
       packages=['singer'],

@@ -13,7 +13,7 @@ LOGGER = get_logger()
 def write_catalog(catalog):
     # If the catalog has no streams, log a warning
     if not catalog.streams:
-        LOGGER.warning("Catalog being written with no streams.")
+        LOGGER.warning('Catalog being written with no streams.')
 
     json.dump(catalog.to_dict(), sys.stdout, indent=2)
 
@@ -92,7 +92,7 @@ class Catalog():
 
     @classmethod
     def load(cls, filename):
-        with open(filename) as fp:  # pylint: disable=invalid-name
+        with open(filename, encoding='utf-8') as fp:  # pylint: disable=invalid-name
             return Catalog.from_dict(json.load(fp))
 
     @classmethod
