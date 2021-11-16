@@ -1,7 +1,7 @@
 # pylint: disable=redefined-builtin, too-many-arguments, invalid-name
 '''Provides an object model for JSON Schema'''
 
-import json
+import orjson
 
 # These are standard keys defined in the JSON Schema spec
 STANDARD_KEYS = [
@@ -57,7 +57,7 @@ class Schema():  # pylint: disable=too-many-instance-attributes
         self.patternProperties = patternProperties
 
     def __str__(self):
-        return json.dumps(self.to_dict())
+        return orjson.dumps(self.to_dict())
 
     def __repr__(self):
         pairs = [k + '=' + repr(v) for k, v in self.__dict__.items()]

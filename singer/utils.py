@@ -2,7 +2,7 @@ import argparse
 import collections
 import datetime
 import functools
-import json
+import orjson
 import time
 from warnings import warn
 
@@ -106,7 +106,7 @@ def chunk(array, num):
 
 def load_json(path):
     with open(path, encoding='utf-8') as fil:
-        return json.load(fil)
+        return orjson.loads(fil.read())
 
 
 def update_state(state, entity, dtime):

@@ -1,8 +1,7 @@
 import singer
+import orjson
 import unittest
-import datetime
 import dateutil
-from decimal import Decimal
 
 
 class TestSinger(unittest.TestCase):
@@ -153,26 +152,25 @@ class TestParsingNumbers(unittest.TestCase):
 
     def test_parse_regular_decimal(self):
         value = self.create_record('3.14')
-        self.assertEqual(Decimal('3.14'), value)
+        self.assertEqual(3.14, value)
 
     def test_parse_large_decimal(self):
         value = self.create_record('9999999999999999.9999')
-        self.assertEqual(Decimal('9999999999999999.9999'), value)
+        self.assertEqual(9999999999999999.9999, value)
 
     def test_parse_small_decimal(self):
         value = self.create_record('-9999999999999999.9999')
-        self.assertEqual(Decimal('-9999999999999999.9999'), value)
+        self.assertEqual(-9999999999999999.9999, value)
 
     def test_parse_absurdly_large_decimal(self):
         value_str = '9' * 1024 + '.' + '9' * 1024
-        value = self.create_record(value_str)
-        self.assertEqual(Decimal(value_str), value)
+        with self.assertRaises(orjson.JSONDecodeError):
+            self.create_record(value_str)
 
     def test_parse_absurdly_large_int(self):
         value_str = '9' * 1024
-        value = self.create_record(value_str)
-        self.assertEqual(int(value_str), value)
-        self.assertEqual(int, type(value))
+        with self.assertRaises(orjson.JSONDecodeError):
+            self.create_record(value_str)
 
     def test_parse_bulk_decs(self):
         value_strs = [
@@ -192,7 +190,7 @@ class TestParsingNumbers(unittest.TestCase):
         ]
         for value_str in value_strs:
             value = self.create_record(value_str)
-            self.assertEqual(Decimal(value_str), value)
+            self.assertEqual(float(value_str), value)
 
 
 if __name__ == '__main__':
