@@ -57,7 +57,7 @@ class Schema():  # pylint: disable=too-many-instance-attributes
         self.patternProperties = patternProperties
 
     def __str__(self):
-        return orjson.dumps(self.to_dict())
+        return orjson.dumps(self.to_dict()).decode('utf-8')
 
     def __repr__(self):
         pairs = [k + '=' + repr(v) for k, v in self.__dict__.items()]
