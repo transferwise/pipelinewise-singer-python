@@ -20,9 +20,9 @@ class Message():
         return isinstance(other, Message) and self.asdict() == other.asdict()
 
     def __repr__(self):
-        pairs = ["{}={}".format(k, v) for k, v in self.asdict().items()]
-        attrstr = ", ".join(pairs)
-        return "{}({})".format(self.__class__.__name__, attrstr)
+        pairs = [f'{k}={v}' for k, v in self.asdict().items()]
+        attrstr = ', '.join(pairs)
+        return f'{self.__class__.__name__}({attrstr})'
 
     def __str__(self):
         return str(self.asdict())
@@ -52,7 +52,7 @@ class RecordMessage(Message):
         self.time_extracted = time_extracted
         if time_extracted and not time_extracted.tzinfo:
             raise ValueError("'time_extracted' must be either None " +
-                             "or an aware datetime (with a time zone)")
+                             'or an aware datetime (with a time zone)')
 
     def asdict(self):
         result = {
@@ -105,7 +105,7 @@ class SchemaMessage(Message):
         if isinstance(bookmark_properties, (str, bytes)):
             bookmark_properties = [bookmark_properties]
         if bookmark_properties and not isinstance(bookmark_properties, list):
-            raise Exception("bookmark_properties must be a string or list of strings")
+            raise Exception('bookmark_properties must be a string or list of strings')
 
         self.bookmark_properties = bookmark_properties
 
@@ -186,6 +186,7 @@ class BatchMessage(Message):
             If none is provided, 'jsonl' will be assumed. e.g. 'csv'.
       * compression (string, optional) - An indication of file compression format. e.g. 'gzip'.
       * batch_size (int, optional) - Number of records in this batch. e.g. 100000.
+      * time_extracted (datetime, optional) - TZ-aware datetime with batch extraction time.
 
     If file_properties are not provided, uncompressed jsonl files are assumed.
 
@@ -207,12 +208,17 @@ class BatchMessage(Message):
         file_format: Optional[str] = None,
         compression: Optional[str] = None,
         batch_size: Optional[int] = None,
+        time_extracted: Optional[datetime] = None,
     ) -> None:
         self.stream = stream
         self.filepath = filepath
         self.format = file_format or 'jsonl'
         self.compression = compression
         self.batch_size = batch_size
+        self.time_extracted = time_extracted
+        if time_extracted and not time_extracted.tzinfo:
+            raise ValueError("'time_extracted' must be either None " +
+                             'or an aware datetime (with a time zone)')
 
     def asdict(self) -> dict:
         result: Dict[str, Any] = {
@@ -225,12 +231,15 @@ class BatchMessage(Message):
             result['compression'] = self.compression
         if self.batch_size is not None:
             result['batch_size'] = self.batch_size
+        if self.time_extracted:
+            as_utc = self.time_extracted.astimezone(pytz.utc)
+            result['time_extracted'] = u.strftime(as_utc)
         return result
 
 
 def _required_key(msg: dict, k: str) -> Any:
     if k not in msg:
-        raise Exception("Message is missing required key '{}': {}".format(k, msg))
+        raise Exception(f"Message is missing required key '{k}': {msg}")
 
     return msg[k]
 
@@ -251,8 +260,8 @@ def parse_message(msg: str) -> Optional[Message]:
         if time_extracted:
             try:
                 time_extracted = ciso8601.parse_datetime(time_extracted)
-            except:
-                LOGGER.warning("unable to parse time_extracted with ciso8601 library")
+            except Exception:
+                LOGGER.warning('unable to parse time_extracted with ciso8601 library')
                 time_extracted = None
 
 
@@ -262,29 +271,38 @@ def parse_message(msg: str) -> Optional[Message]:
                              version=obj.get('version'),
                              time_extracted=time_extracted)
 
-
-    elif msg_type == 'SCHEMA':
+    if msg_type == 'SCHEMA':
         return SchemaMessage(stream=_required_key(obj, 'stream'),
                              schema=_required_key(obj, 'schema'),
                              key_properties=_required_key(obj, 'key_properties'),
                              bookmark_properties=obj.get('bookmark_properties'))
 
-    elif msg_type == 'STATE':
+    if msg_type == 'STATE':
         return StateMessage(value=_required_key(obj, 'value'))
 
-    elif msg_type == 'ACTIVATE_VERSION':
+    if msg_type == 'ACTIVATE_VERSION':
         return ActivateVersionMessage(stream=_required_key(obj, 'stream'),
                                       version=_required_key(obj, 'version'))
 
-    elif msg_type == 'BATCH':
-        return BatchMessage(stream=_required_key(obj, 'stream'),
-                            filepath=_required_key(obj, 'filepath'),
-                            file_format=_required_key(obj, 'format'),
-                            compression=obj.get('compression'),
-                            batch_size=obj.get('batch_size'))
+    if msg_type == 'BATCH':
+        time_extracted = obj.get('time_extracted')
+        if time_extracted:
+            try:
+                time_extracted = ciso8601.parse_datetime(time_extracted)
+            except Exception:
+                LOGGER.warning('Unable to parse time_extracted with ciso8601 library')
+                time_extracted = None
 
-    else:
-        return None
+        return BatchMessage(
+            stream=_required_key(obj, 'stream'),
+            filepath=_required_key(obj, 'filepath'),
+            file_format=_required_key(obj, 'format'),
+            compression=obj.get('compression'),
+            batch_size=obj.get('batch_size'),
+            time_extracted=time_extracted
+        )
+
+    return None
 
 
 def format_message(message: Message) -> str:
@@ -334,7 +352,7 @@ def write_schema(
     if isinstance(key_properties, (str, bytes)):
         key_properties = [key_properties]
     if not isinstance(key_properties, list):
-        raise Exception("key_properties must be a string or list of strings")
+        raise Exception('key_properties must be a string or list of strings')
 
     write_message(
         SchemaMessage(
@@ -362,8 +380,12 @@ def write_version(stream_name: str, version: int) -> None:
     write_message(ActivateVersionMessage(stream_name, version))
 
 def write_batch(
-    stream_name: str, filepath: str, file_format: Optional[str] = None,
-    compression: Optional[str] = None, batch_size: Optional[int] = None
+    stream_name: str,
+    filepath: str,
+    file_format: Optional[str] = None,
+    compression: Optional[str] = None,
+    batch_size: Optional[int] = None,
+    time_extracted: Optional[datetime] = None,
 ) -> None:
     """Write a batch message.
 
@@ -373,4 +395,13 @@ def write_batch(
     compression = None
     batch_size = 100000
     """
-    write_message(BatchMessage(stream_name, filepath, file_format, compression, batch_size))
+    write_message(
+        BatchMessage(
+            stream=stream_name,
+            filepath=filepath,
+            file_format=file_format,
+            compression=compression,
+            batch_size=batch_size,
+            time_extracted=time_extracted
+        )
+    )

@@ -35,20 +35,18 @@ def get_bookmark(
 
 def set_offset(
     state: StateDict, tap_stream_id: str, offset_key: Any, offset_value: Any
-) -> StateDict:
-    state = ensure_bookmark_path(state, ['bookmarks', tap_stream_id, "offset", offset_key])
-    state['bookmarks'][tap_stream_id]["offset"][offset_key] = offset_value
-    return state
-
-def clear_offset(state: StateDict, tap_stream_id: str) -> StateDict:
-    state = ensure_bookmark_path(state, ['bookmarks', tap_stream_id, "offset"])
-    state['bookmarks'][tap_stream_id]["offset"] = {}
-    return state
-
-def get_offset(
-    state: StateDict, tap_stream_id: str, default: Optional[Any] = None
 ):
-    return state.get('bookmarks', {}).get(tap_stream_id, {}).get("offset", default)
+    state = ensure_bookmark_path(state, ['bookmarks', tap_stream_id, 'offset', offset_key])
+    state['bookmarks'][tap_stream_id]['offset'][offset_key] = offset_value
+    return state
+
+def clear_offset(state: StateDict, tap_stream_id: str):
+    state = ensure_bookmark_path(state, ['bookmarks', tap_stream_id, 'offset'])
+    state['bookmarks'][tap_stream_id]['offset'] = {}
+    return state
+
+def get_offset(state: StateDict, tap_stream_id: str, default: Optional[Any] = None):
+    return state.get('bookmarks', {}).get(tap_stream_id, {}).get('offset', default)
 
 def set_currently_syncing(state: StateDict, tap_stream_id: str):
     state['currently_syncing'] = tap_stream_id

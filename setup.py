@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(name="pipelinewise-singer-python",
-      version='1.2.0',
+      version='1.3.0',
       description="Singer.io utility library - PipelineWise compatible",
       long_description=long_description,
       long_description_content_type="text/markdown",
@@ -26,11 +26,12 @@ setup(name="pipelinewise-singer-python",
       ],
       extras_require={
           'dev': [
-              'pylint',
+              'pylint==2.11.1',
               'ipython',
               'ipdb',
               'nose',
               'mypy',
+              'unify==0.5'
           ]
       },
       packages=['singer'],

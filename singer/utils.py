@@ -14,9 +14,9 @@ import backoff as backoff_module
 
 from singer.catalog import Catalog
 
-DATETIME_PARSE = "%Y-%m-%dT%H:%M:%SZ"
-DATETIME_FMT = "%04Y-%m-%dT%H:%M:%S.%fZ"
-DATETIME_FMT_SAFE = "%Y-%m-%dT%H:%M:%S.%fZ"
+DATETIME_PARSE = '%Y-%m-%dT%H:%M:%SZ'
+DATETIME_FMT = '%04Y-%m-%dT%H:%M:%S.%fZ'
+DATETIME_FMT_SAFE = '%Y-%m-%dT%H:%M:%S.%fZ'
 
 def now() -> datetime.datetime:
     return datetime.datetime.utcnow().replace(tzinfo=pytz.UTC)
@@ -55,7 +55,7 @@ def strptime(dtime: str) -> datetime.datetime:
     ValueError: time data '2018-01-01T00:00:00.000000Z' does not match format '%Y-%m-%dT%H:%M:%SZ'
     """
 
-    warn("Use strptime_to_utc instead", DeprecationWarning, stacklevel=2)
+    warn('Use strptime_to_utc instead', DeprecationWarning, stacklevel=2)
 
     return datetime.datetime.strptime(dtime, DATETIME_PARSE)
 
@@ -63,12 +63,12 @@ def strptime_to_utc(dtimestr: str) -> datetime.datetime:
     d_object = dateutil.parser.parse(dtimestr)
     if d_object.tzinfo is None:
         return d_object.replace(tzinfo=pytz.UTC)
-    else:
-        return d_object.astimezone(tz=pytz.UTC)
+
+    return d_object.astimezone(tz=pytz.UTC)
 
 def strftime(dtime: datetime.datetime, format_str: str = DATETIME_FMT) -> str:
     if dtime.utcoffset() != datetime.timedelta(0):
-        raise Exception("datetime must be pegged at UTC tzoneinfo")
+        raise Exception('datetime must be pegged at UTC tzoneinfo')
 
     dt_str = None
     try:
@@ -107,7 +107,7 @@ def chunk(array: list, num: int) -> Iterable[list]:
 
 
 def load_json(path) -> Union[dict, list]:
-    with open(path) as fil:
+    with open(path, encoding='utf-8') as fil:
         return cast(dict, json.load(fil))
 
 
@@ -191,7 +191,7 @@ def parse_args(required_config_keys: List[str]) -> argparse.Namespace:
 def check_config(config: dict, required_keys: List[str]) -> None:
     missing_keys = [key for key in required_keys if key not in config]
     if missing_keys:
-        raise Exception("Config is missing required keys: {}".format(missing_keys))
+        raise Exception(f'Config is missing required keys: {missing_keys}')
 
 
 def backoff(exceptions, giveup) -> Callable:
@@ -215,7 +215,7 @@ def backoff(exceptions, giveup) -> Callable:
 
 def exception_is_4xx(exception: Exception) -> bool:
     """Returns True if exception is in the 4xx range."""
-    if not hasattr(exception, "response"):
+    if not hasattr(exception, 'response'):
         return False
 
     response = exception.response  # type: ignore  # Duck-typed requests.Response
@@ -223,7 +223,7 @@ def exception_is_4xx(exception: Exception) -> bool:
     if response is None:
         return False
 
-    if not hasattr(response, "status_code"):
+    if not hasattr(exception.response, 'status_code'):
         return False
 
     return 400 <= cast(int, response.status_code) < 500
@@ -255,17 +255,17 @@ def should_sync_field(
     default: (default: False) True|False
 
     "automatic" inclusion always returns True:
-    >>> should_sync_field("automatic", None, False)
+    >>> should_sync_field('automatic', None, False)
     True
-    >>> should_sync_field("automatic", True, False)
+    >>> should_sync_field('automatic', True, False)
     True
-    >>> should_sync_field("automatic", False, False)
+    >>> should_sync_field('automatic', False, False)
     True
-    >>> should_sync_field("automatic", None, True)
+    >>> should_sync_field('automatic', None, True)
     True
-    >>> should_sync_field("automatic", True, True)
+    >>> should_sync_field('automatic', True, True)
     True
-    >>> should_sync_field("automatic", False, True)
+    >>> should_sync_field('automatic', False, True)
     True
 
 
@@ -300,11 +300,11 @@ def should_sync_field(
     True
     """
     # always select automatic fields
-    if inclusion == "automatic":
+    if inclusion == 'automatic':
         return True
 
     # never select unsupported fields
-    if inclusion == "unsupported":
+    if inclusion == 'unsupported':
         return False
 
     # at this point inclusion == "available"
