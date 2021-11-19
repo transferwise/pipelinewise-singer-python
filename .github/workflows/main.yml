@@ -34,5 +34,8 @@ jobs:
       - name: Runs tests with coverage
         run: nosetests --with-doctest -v 
 
+      - name: Install mypy types where available
+        run: mypy --install-types
+
       - name: Runs mypy linter and type checks
         run: mypy --config-file ./mypy.ini singer

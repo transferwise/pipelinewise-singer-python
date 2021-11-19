@@ -223,7 +223,7 @@ def exception_is_4xx(exception: Exception) -> bool:
     if response is None:
         return False
 
-    if not hasattr(exception.response, 'status_code'):
+    if not hasattr(response, 'status_code'):
         return False
 
     return 400 <= cast(int, response.status_code) < 500
