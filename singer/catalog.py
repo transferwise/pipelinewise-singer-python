@@ -125,7 +125,7 @@ class Catalog():
         return {'streams': [stream.to_dict() for stream in self.streams]}
 
     def dump(self):
-        write_catalog(self.to_dict())
+        write_catalog(self)
 
     def get_stream(self, tap_stream_id):
         for stream in self.streams:
