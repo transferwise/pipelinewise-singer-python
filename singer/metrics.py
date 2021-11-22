@@ -40,7 +40,7 @@ commonly used metrics.
 
 '''
 
-import json
+import orjson
 import re
 import time
 from collections import namedtuple
@@ -84,7 +84,7 @@ def log(logger, point):
         'value': point.value,
         'tags': point.tags
     }
-    logger.info('METRIC: %s', json.dumps(result))
+    logger.info('METRIC: %s', orjson.dumps(result))
 
 
 class Counter():
@@ -237,7 +237,7 @@ def parse(line):
     if match:
         json_str = match.group(1)
         try:
-            raw = json.loads(json_str)
+            raw = orjson.loads(json_str)
             return Point(
                 metric_type=raw.get('type'),
                 metric=raw.get('metric'),

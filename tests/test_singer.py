@@ -1,8 +1,7 @@
 import singer
+import orjson
 import unittest
-import datetime
 import dateutil
-from decimal import Decimal
 
 
 class TestSinger(unittest.TestCase):
@@ -21,7 +20,7 @@ class TestSinger(unittest.TestCase):
             singer.RecordMessage(record={'name': 'foo'}, stream='users', version=2))
 
     def test_parse_message_record_naive_extraction_time(self):
-        with self.assertRaisesRegex(ValueError, "must be either None or an aware datetime"):
+        with self.assertRaisesRegex(ValueError, 'must be either None or an aware datetime'):
             message = singer.parse_message(
                 '{"type": "RECORD", "record": {"name": "foo"}, "stream": "users", "version": 2, "time_extracted": "1970-01-02T00:00:00"}')
 
@@ -32,7 +31,7 @@ class TestSinger(unittest.TestCase):
             record={'name': 'foo'},
             stream='users',
             version=2,
-            time_extracted=dateutil.parser.parse("1970-01-02T00:00:00.000Z"))
+            time_extracted=dateutil.parser.parse('1970-01-02T00:00:00.000Z'))
         print(message)
         print(expected)
         self.assertEqual(message, expected)
@@ -43,9 +42,9 @@ class TestSinger(unittest.TestCase):
             record={'name': 'foo'},
             stream='users',
             version=2,
-            time_extracted=dateutil.parser.parse("1970-01-02T00:00:00.000Z"))
-        expected = "1970-01-02T00:00:00.000000Z"
-        self.assertEqual(message.asdict()["time_extracted"], expected)
+            time_extracted=dateutil.parser.parse('1970-01-02T00:00:00.000Z'))
+        expected = '1970-01-02T00:00:00.000000Z'
+        self.assertEqual(message.asdict()['time_extracted'], expected)
 
 
     def test_parse_message_record_missing_record(self):
@@ -92,8 +91,11 @@ class TestSinger(unittest.TestCase):
 
     def test_parse_message_batch_good(self):
         message = singer.parse_message(
-            '{"type": "BATCH", "stream": "users", "filepath": "/tmp/users0001.jsonl", "format": "jsonl"}')
-        self.assertEqual(message, singer.BatchMessage(stream='users', filepath='/tmp/users0001.jsonl'))
+            '{"type": "BATCH", "stream": "users", "filepath": "/tmp/users0001.jsonl", "format": "jsonl", "time_extracted": "1970-01-02T00:00:00.000Z"}')
+        self.assertEqual(
+            message,
+            singer.BatchMessage(stream='users', filepath='/tmp/users0001.jsonl', time_extracted=dateutil.parser.parse('1970-01-02T00:00:00.000Z'))
+        )
 
     def test_parse_message_batch_missing_value(self):
         with self.assertRaises(Exception):
@@ -122,19 +124,19 @@ class TestSinger(unittest.TestCase):
 
     ## These three tests just confirm that writing doesn't throw
     def test_write_record(self):
-        singer.write_record("users", {"name": "mike"})
+        singer.write_record('users', {'name': 'mike'})
 
     def test_write_schema(self):
         schema={'type': 'object',
                 'properties': {
                     'name': {'type': 'string'}}}
-        singer.write_schema("users", schema, ["name"])
+        singer.write_schema('users', schema, ['name'])
 
     def test_write_state(self):
-        singer.write_state({"foo": 1})
+        singer.write_state({'foo': 1})
 
     def test_write_batch(self):
-        singer.write_batch("users", "/tmp/users0001.jsonl")
+        singer.write_batch('users', '/tmp/users0001.jsonl')
 
 
 class TestParsingNumbers(unittest.TestCase):
@@ -150,26 +152,25 @@ class TestParsingNumbers(unittest.TestCase):
 
     def test_parse_regular_decimal(self):
         value = self.create_record('3.14')
-        self.assertEqual(Decimal('3.14'), value)
+        self.assertEqual(3.14, value)
 
     def test_parse_large_decimal(self):
         value = self.create_record('9999999999999999.9999')
-        self.assertEqual(Decimal('9999999999999999.9999'), value)
+        self.assertEqual(9999999999999999.9999, value)
 
     def test_parse_small_decimal(self):
         value = self.create_record('-9999999999999999.9999')
-        self.assertEqual(Decimal('-9999999999999999.9999'), value)
+        self.assertEqual(-9999999999999999.9999, value)
 
     def test_parse_absurdly_large_decimal(self):
         value_str = '9' * 1024 + '.' + '9' * 1024
-        value = self.create_record(value_str)
-        self.assertEqual(Decimal(value_str), value)
+        with self.assertRaises(orjson.JSONDecodeError):
+            self.create_record(value_str)
 
     def test_parse_absurdly_large_int(self):
         value_str = '9' * 1024
-        value = self.create_record(value_str)
-        self.assertEqual(int(value_str), value)
-        self.assertEqual(int, type(value))
+        with self.assertRaises(orjson.JSONDecodeError):
+            self.create_record(value_str)
 
     def test_parse_bulk_decs(self):
         value_strs = [
@@ -189,7 +190,7 @@ class TestParsingNumbers(unittest.TestCase):
         ]
         for value_str in value_strs:
             value = self.create_record(value_str)
-            self.assertEqual(Decimal(value_str), value)
+            self.assertEqual(float(value_str), value)
 
 
 if __name__ == '__main__':

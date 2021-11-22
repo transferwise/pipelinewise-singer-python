@@ -43,6 +43,9 @@ class TestSchema(unittest.TestCase):
                         inclusion='whatever',
                         additionalProperties=True)
 
+    def test_to_string(self):
+        self.assertEquals('{"maxLength":32,"type":"string"}', str(self.string_obj))
+
     def test_string_to_dict(self):
         self.assertEquals(self.string_dict, self.string_obj.to_dict())
 
