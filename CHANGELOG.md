@@ -1,6 +1,11 @@
 # Changelog
 
 ## 1.3.0 (2021-08-12)
+  * Swith to `orjson` JSON library to serialie and deserialise faster
+  * Bump `backoff` to 1.11.1
+  * Bump `pytz` to latest
+
+## 1.3.0 (2021-08-12)
   * Added `time_extracted` to BATCH message type
 
 ## 1.2.0 (2020-12-01)
