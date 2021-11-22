@@ -19,17 +19,18 @@ setup(name="pipelinewise-singer-python",
       install_requires=[
           'pytz<2021.0',
           'jsonschema==3.2.0',
-          'simplejson==3.17.2',
+          'orjson==3.6.1',
           'python-dateutil>=2.6.0',
           'backoff==1.11.1',
           'ciso8601',
       ],
       extras_require={
           'dev': [
-              'pylint',
+              'pylint==2.11.1',
               'ipython',
               'ipdb',
-              'nose'
+              'nose',
+              'unify==0.5'
           ]
       },
       packages=['singer'],

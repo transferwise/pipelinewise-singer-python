@@ -29,9 +29,11 @@ jobs:
           python -m pip install -U pip setuptools wheel
           python3 -m pip install -U .[dev]
 
+      - name: Check code formatting
+        run: find singer tests -type f -name '*.py' | xargs unify --check-only
+
       - name: Analysing the code with pylint
-        run: |
-          pylint singer --extension-pkg-whitelist=ciso8601 -d missing-docstring,broad-except,bare-except,too-many-return-statements,too-many-branches,too-many-arguments,no-else-return,too-few-public-methods,fixme,protected-access
+        run: pylint singer
 
       - name: Runs tests with coverage
-        run: nosetests --with-doctest -v 
+        run: nosetests --with-doctest -v --nocapture

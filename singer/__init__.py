@@ -66,6 +66,6 @@ from singer.bookmarks import (
     get_currently_syncing,
 )
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     import doctest
     doctest.testmod()
