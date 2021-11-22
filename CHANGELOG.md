@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.4.0 (2021-08-12)
+## 1.4.0 (2021-11-22)
   * Swith to `orjson` JSON library to serialie and deserialise faster
   * Bump `backoff` to 1.11.1
   * Bump `pytz` to latest
