@@ -1,7 +1,7 @@
 import sys
 
 import pytz
-import simplejson as json
+import orjson
 import ciso8601
 
 import singer.utils as u
@@ -239,7 +239,7 @@ def parse_message(msg):
     # lossy conversions.  However, this will affect
     # very few data points and we have chosen to
     # leave conversion as is for now.
-    obj = json.loads(msg, use_decimal=True)
+    obj = orjson.loads(msg)
     msg_type = _required_key(obj, 'type')
 
     if msg_type == 'RECORD':
@@ -293,12 +293,12 @@ def parse_message(msg):
 
 
 def format_message(message):
-    return json.dumps(message.asdict(), use_decimal=True)
+    return orjson.dumps(message.asdict(), option=orjson.OPT_APPEND_NEWLINE)
 
 
 def write_message(message):
-    sys.stdout.write(format_message(message) + '\n')
-    sys.stdout.flush()
+    sys.stdout.buffer.write(format_message(message))
+    sys.stdout.buffer.flush()
 
 
 def write_record(stream_name, record, stream_alias=None, time_extracted=None):

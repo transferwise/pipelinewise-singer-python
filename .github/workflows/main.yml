@@ -36,4 +36,4 @@ jobs:
         run: pylint singer
 
       - name: Runs tests with coverage
-        run: nosetests --with-doctest -v 
+        run: nosetests --with-doctest -v --nocapture
