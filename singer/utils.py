@@ -2,8 +2,10 @@ import argparse
 import collections
 import datetime
 import functools
-import json
 from logging import Logger
+
+import orjson
+
 import time
 from typing import Callable, Union, List, cast, Iterable
 from warnings import warn
@@ -106,9 +108,9 @@ def chunk(array: list, num: int) -> Iterable[list]:
         yield array[i:i + num]
 
 
-def load_json(path) -> Union[dict, list]:
+def load_json(path: str) -> Union[dict, list]:
     with open(path, encoding='utf-8') as fil:
-        return cast(dict, json.load(fil))
+        return orjson.loads(fil.read())
 
 
 def update_state(

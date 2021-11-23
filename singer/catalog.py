@@ -1,5 +1,5 @@
 '''Provides an object model for a Singer Catalog.'''
-import json
+import orjson
 import sys
 from typing import Iterable, Optional, List, Any, cast
 
@@ -16,7 +16,9 @@ def write_catalog(catalog: "Catalog") -> None:
     if not catalog.streams:
         LOGGER.warning('Catalog being written with no streams.')
 
-    json.dump(catalog.to_dict(), sys.stdout, indent=2)
+    catalog_json = orjson.dumps(catalog.to_dict(), option=orjson.OPT_INDENT_2)
+    sys.stdout.buffer.write(catalog_json)
+    sys.stdout.buffer.flush()
 
 # pylint: disable=too-many-instance-attributes
 class CatalogEntry():
@@ -105,7 +107,7 @@ class Catalog():
     @classmethod
     def load(cls, filename: str) -> "Catalog":
         with open(filename, encoding='utf-8') as fp:  # pylint: disable=invalid-name
-            return Catalog.from_dict(json.load(fp))
+            return Catalog.from_dict(orjson.loads(fp.read()))
 
     @classmethod
     def from_dict(cls, data: dict) -> "Catalog":
@@ -135,7 +137,7 @@ class Catalog():
         return {'streams': [stream.to_dict() for stream in self.streams]}
 
     def dump(self) -> None:
-        json.dump(self.to_dict(), sys.stdout, indent=2)
+        write_catalog(self)
 
     def get_stream(self, tap_stream_id: str) -> Optional[CatalogEntry]:
         for stream in self.streams:

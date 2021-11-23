@@ -3,7 +3,7 @@ from typing import Dict, List, Any, Optional, Union
 from datetime import datetime
 
 import pytz
-import simplejson as json
+import orjson
 import ciso8601
 
 import singer.utils as u
@@ -252,7 +252,7 @@ def parse_message(msg: str) -> Optional[Message]:
     # lossy conversions.  However, this will affect
     # very few data points and we have chosen to
     # leave conversion as is for now.
-    obj = json.loads(msg, use_decimal=True)
+    obj = orjson.loads(msg)
     msg_type = _required_key(obj, 'type')
 
     if msg_type == 'RECORD':
@@ -305,13 +305,13 @@ def parse_message(msg: str) -> Optional[Message]:
     return None
 
 
-def format_message(message: Message) -> str:
-    return json.dumps(message.asdict(), use_decimal=True)
+def format_message(message: Message, option: int = 0) -> str:
+    return orjson.dumps(message.asdict(), option=option)
 
 
 def write_message(message: Message) -> None:
-    sys.stdout.write(format_message(message) + '\n')
-    sys.stdout.flush()
+    sys.stdout.buffer.write(format_message(message, option=orjson.OPT_APPEND_NEWLINE))
+    sys.stdout.buffer.flush()
 
 
 def write_record(
