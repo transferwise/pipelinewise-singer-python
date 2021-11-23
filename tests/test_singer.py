@@ -200,6 +200,12 @@ class TestParsingNumbers(unittest.TestCase):
         self.assertEqual(b'{"type":"RECORD","stream":"users","record":{"name":"foo"}}',
                          singer.format_message(record_message))
 
+        self.assertEqual(b'{"type":"RECORD","stream":"users","record":{"name":"foo"}}',
+                         singer.format_message(record_message, option=0))
+
+        self.assertEqual(b'{"type":"RECORD","stream":"users","record":{"name":"foo"}}\n',
+                         singer.format_message(record_message, option=orjson.OPT_APPEND_NEWLINE))
+
 
 if __name__ == '__main__':
     unittest.main()
