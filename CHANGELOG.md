@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.1 (2021-11-23)
+  * Fixed an issue when `format_message` returned newline character
+
 ## 2.0.0 (2021-11-23)
   * Swith to `orjson` JSON library to serialie and deserialise faster
   * Bump `backoff` to 1.11.1
