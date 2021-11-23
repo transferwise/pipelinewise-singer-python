@@ -292,12 +292,12 @@ def parse_message(msg):
     return None
 
 
-def format_message(message):
-    return orjson.dumps(message.asdict(), option=orjson.OPT_APPEND_NEWLINE)
+def format_message(message, option=0):
+    return orjson.dumps(message.asdict(), option=option)
 
 
 def write_message(message):
-    sys.stdout.buffer.write(format_message(message))
+    sys.stdout.buffer.write(format_message(message, option=orjson.OPT_APPEND_NEWLINE))
     sys.stdout.buffer.flush()
 
 
