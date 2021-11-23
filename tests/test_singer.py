@@ -192,6 +192,14 @@ class TestParsingNumbers(unittest.TestCase):
             value = self.create_record(value_str)
             self.assertEqual(float(value_str), value)
 
+    def test_format_message(self):
+        record_message = singer.RecordMessage(
+            record={'name': 'foo'},
+            stream='users')
+
+        self.assertEqual(b'{"type":"RECORD","stream":"users","record":{"name":"foo"}}',
+                         singer.format_message(record_message))
+
 
 if __name__ == '__main__':
     unittest.main()
