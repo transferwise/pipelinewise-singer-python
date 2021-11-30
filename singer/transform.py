@@ -1,6 +1,7 @@
 import datetime
 import logging
 import re
+from typing import List, Optional, Set, Union, Any, Tuple
 from jsonschema import RefResolver
 
 import singer.metadata
@@ -20,7 +21,7 @@ VALID_DATETIME_FORMATS = [
 ]
 
 
-def string_to_datetime(value):
+def string_to_datetime(value: str) -> Optional[str]:
     try:
         return strftime(strptime_to_utc(value))
     except Exception as ex:
@@ -28,16 +29,18 @@ def string_to_datetime(value):
         return None
 
 
-def unix_milliseconds_to_datetime(value):
-    return strftime(datetime.datetime.fromtimestamp(float(value) / 1000.0, datetime.timezone.utc))
+def unix_milliseconds_to_datetime(value: Union[str, float]) -> str:
+    return strftime(
+        datetime.datetime.fromtimestamp(float(value) / 1000.0, datetime.timezone.utc)
+    )
 
 
-def unix_seconds_to_datetime(value):
+def unix_seconds_to_datetime(value: Union[str, int, float]) -> str:
     return strftime(datetime.datetime.fromtimestamp(int(value), datetime.timezone.utc))
 
 
 class SchemaMismatch(Exception):
-    def __init__(self, errors):
+    def __init__(self, errors: List[Any]) -> None:
         if not errors:
             msg = 'An error occured during transform that was not a schema mismatch'
 
@@ -55,13 +58,16 @@ class SchemaKey:
     any_of = 'anyOf'
 
 class Error:
-    def __init__(self, path, data, schema=None, logging_level=logging.INFO):
+    def __init__(
+        self, path: list, data: dict, schema: Optional[dict] = None,
+        logging_level=logging.INFO
+    ) -> None:
         self.path = path
         self.data = data
         self.schema = schema
         self.logging_level = logging_level
 
-    def tostr(self):
+    def tostr(self) -> str:
         path = '.'.join(map(str, self.path))
         if self.schema:
             if self.logging_level >= logging.INFO:
@@ -79,14 +85,16 @@ class Error:
 
 
 class Transformer:
-    def __init__(self, integer_datetime_fmt=NO_INTEGER_DATETIME_PARSING, pre_hook=None):
+    def __init__(
+        self, integer_datetime_fmt=NO_INTEGER_DATETIME_PARSING, pre_hook=None
+    ) -> None:
         self.integer_datetime_fmt = integer_datetime_fmt
         self.pre_hook = pre_hook
-        self.removed = set()
-        self.filtered = set()
-        self.errors = []
+        self.removed: Set[str] = set()
+        self.filtered: Set[str] = set()
+        self.errors: List[Error] = []
 
-    def log_warning(self):
+    def log_warning(self) -> None:
         if self.filtered:
             LOGGER.debug('Filtered %s paths during transforms '
                          'as they were unsupported or not selected:\n\t%s',
@@ -103,17 +111,23 @@ class Transformer:
             # Output list format to parse for reporting
             LOGGER.debug('Removed paths list: %s', sorted(self.removed))
 
-    def __enter__(self):
+    def __enter__(self) -> "Transformer":
         return self
 
-    def __exit__(self, *args):
+    def __exit__(self, *args) -> None:
         self.log_warning()
 
-    def filter_data_by_metadata(self, data, metadata):
+    def filter_data_by_metadata(
+        self, data: Union[dict, Any], metadata: Optional[dict]
+    ) -> dict:
         if isinstance(data, dict) and metadata:
             for field_name in list(data.keys()):
-                selected = singer.metadata.get(metadata, ('properties', field_name), 'selected')
-                inclusion = singer.metadata.get(metadata, ('properties', field_name), 'inclusion')
+                selected = singer.metadata.get(
+                    metadata, ('properties', field_name), 'selected'
+                )
+                inclusion = singer.metadata.get(
+                    metadata, ('properties', field_name), 'inclusion'
+                )
                 if inclusion == 'automatic':
                     continue
 
@@ -131,7 +145,7 @@ class Transformer:
 
         return data
 
-    def transform(self, data, schema, metadata=None):
+    def transform(self, data: dict, schema: dict, metadata: Optional[dict] =None):
         data = self.filter_data_by_metadata(data, metadata)
 
         success, transformed_data = self.transform_recur(data, schema, [])
@@ -140,7 +154,9 @@ class Transformer:
 
         return transformed_data
 
-    def transform_recur(self, data, schema, path):
+    def transform_recur(
+        self, data: dict, schema: dict, path: list
+    ) -> Tuple[bool, Optional[dict]]:
         if 'anyOf' in schema:
             return self._transform_anyof(data, schema, path)
 
@@ -165,7 +181,7 @@ class Transformer:
             self.errors.append(Error(path, data, schema, logging_level=LOGGER.level))
             return False, None
 
-    def _transform_anyof(self, data, schema, path):
+    def _transform_anyof(self, data: dict, schema: dict, path: list) -> Tuple[bool, Any]:
         subschemas = schema['anyOf']
         for subschema in subschemas:
             success, transformed_data = self.transform_recur(data, subschema, path)
@@ -176,7 +192,9 @@ class Transformer:
             self.errors.append(Error(path, data, schema, logging_level=LOGGER.level))
             return False, None
 
-    def _transform_object(self, data, schema, path, pattern_properties):
+    def _transform_object(
+        self, data: dict, schema: dict, path: list, pattern_properties: dict
+    ) -> Tuple[bool, dict]:
         # We do not necessarily have a dict to transform here. The schema's
         # type could contain multiple possible values. Eg:
         #     ["null", "object", "string"]
@@ -209,7 +227,7 @@ class Transformer:
 
         return all(successes), result
 
-    def _transform_array(self, data, schema, path):
+    def _transform_array(self, data: list, schema: dict, path: list) -> Tuple[bool, list]:
         # We do not necessarily have a list to transform here. The schema's
         # type could contain multiple possible values. Eg:
         #     ["null", "array", "integer"]
@@ -224,7 +242,7 @@ class Transformer:
 
         return all(successes), result
 
-    def _transform_datetime(self, value):
+    def _transform_datetime(self, value: Optional[str]) -> Optional[str]:
         if value is None or value == '':
             return None # Short circuit in the case of null or empty string
 
@@ -242,7 +260,7 @@ class Transformer:
         except Exception:
             return string_to_datetime(value)
 
-    def _transform(self, data, typ, schema, path):
+    def _transform(self, data, typ, schema, path: list) -> Tuple[bool, Optional[Any]]:
         if self.pre_hook:
             data = self.pre_hook(data, typ, schema)
 

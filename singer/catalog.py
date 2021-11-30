@@ -1,6 +1,7 @@
 '''Provides an object model for a Singer Catalog.'''
 import orjson
 import sys
+from typing import Iterable, Optional, List, Any, cast
 
 from . import metadata as metadata_module
 from .bookmarks import get_currently_syncing
@@ -10,7 +11,7 @@ from .schema import Schema
 LOGGER = get_logger()
 
 
-def write_catalog(catalog):
+def write_catalog(catalog: "Catalog") -> None:
     # If the catalog has no streams, log a warning
     if not catalog.streams:
         LOGGER.warning('Catalog being written with no streams.')
@@ -22,10 +23,21 @@ def write_catalog(catalog):
 # pylint: disable=too-many-instance-attributes
 class CatalogEntry():
 
-    def __init__(self, tap_stream_id=None, stream=None,
-                 key_properties=None, schema=None, replication_key=None,
-                 is_view=None, database=None, table=None, row_count=None,
-                 stream_alias=None, metadata=None, replication_method=None):
+    def __init__(
+        self,
+        tap_stream_id: Optional[str] = None,
+        stream: Optional[str] = None,
+        key_properties: Optional[List[str]] = None,
+        schema: Optional[Schema] = None,
+        replication_key: Optional[str] = None,
+        is_view: Optional[bool] = None,
+        database: Optional[str] = None,
+        table: Optional[str] = None,
+        row_count: Optional[int] = None,
+        stream_alias: Optional[str] = None,
+        metadata: Optional[dict] = None,
+        replication_method: Optional[str] = None
+    ) -> None:
 
         self.tap_stream_id = tap_stream_id
         self.stream = stream
@@ -83,22 +95,22 @@ class CatalogEntry():
 
 class Catalog():
 
-    def __init__(self, streams):
+    def __init__(self, streams: List[CatalogEntry]) -> None:
         self.streams = streams
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.__dict__)
 
-    def __eq__(self, other):
-        return self.__dict__ == other.__dict__
+    def __eq__(self, other: Any) -> bool:
+        return cast(bool, self.__dict__ == other.__dict__)
 
     @classmethod
-    def load(cls, filename):
+    def load(cls, filename: str) -> "Catalog":
         with open(filename, encoding='utf-8') as fp:  # pylint: disable=invalid-name
             return Catalog.from_dict(orjson.loads(fp.read()))
 
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls, data: dict) -> "Catalog":
         # TODO: We may want to store streams as a dict where the key is a
         # tap_stream_id and the value is a CatalogEntry. This will allow
         # faster lookup based on tap_stream_id. This would be a breaking
@@ -121,19 +133,19 @@ class Catalog():
             streams.append(entry)
         return Catalog(streams)
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         return {'streams': [stream.to_dict() for stream in self.streams]}
 
-    def dump(self):
+    def dump(self) -> None:
         write_catalog(self)
 
-    def get_stream(self, tap_stream_id):
+    def get_stream(self, tap_stream_id: str) -> Optional[CatalogEntry]:
         for stream in self.streams:
             if stream.tap_stream_id == tap_stream_id:
                 return stream
         return None
 
-    def _shuffle_streams(self, state):
+    def _shuffle_streams(self, state: dict) -> List[CatalogEntry]:
         currently_syncing = get_currently_syncing(state)
 
         if currently_syncing is None:
@@ -149,7 +161,7 @@ class Catalog():
         return top_half + bottom_half
 
 
-    def get_selected_streams(self, state):
+    def get_selected_streams(self, state: dict) -> Iterable[CatalogEntry]:
         for stream in self._shuffle_streams(state):
             if not stream.is_selected():
                 LOGGER.info('Skipping stream: %s', stream.tap_stream_id)

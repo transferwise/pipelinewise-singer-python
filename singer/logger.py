@@ -3,7 +3,7 @@ import logging.config
 import os
 
 
-def get_logger(name='singer'):
+def get_logger(name: str = 'singer') -> logging.Logger:
     """Return a Logger instance to use in singer."""
     # Use custom logging config provided by environment variable
     if 'LOGGING_CONF_FILE' in os.environ and os.environ['LOGGING_CONF_FILE']:

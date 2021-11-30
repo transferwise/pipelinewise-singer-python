@@ -2,8 +2,12 @@ import argparse
 import collections
 import datetime
 import functools
+from logging import Logger
+
 import orjson
+
 import time
+from typing import Callable, Union, List, cast, Iterable
 from warnings import warn
 
 import dateutil.parser
@@ -16,17 +20,17 @@ DATETIME_PARSE = '%Y-%m-%dT%H:%M:%SZ'
 DATETIME_FMT = '%04Y-%m-%dT%H:%M:%S.%fZ'
 DATETIME_FMT_SAFE = '%Y-%m-%dT%H:%M:%S.%fZ'
 
-def now():
+def now() -> datetime.datetime:
     return datetime.datetime.utcnow().replace(tzinfo=pytz.UTC)
 
-def strptime_with_tz(dtime):
+def strptime_with_tz(dtime: str) -> datetime.datetime:
     d_object = dateutil.parser.parse(dtime)
     if d_object.tzinfo is None:
         return d_object.replace(tzinfo=pytz.UTC)
 
     return d_object
 
-def strptime(dtime):
+def strptime(dtime: str) -> datetime.datetime:
     """DEPRECATED Use strptime_to_utc instead.
 
     Parse DTIME according to DATETIME_PARSE without TZ safety.
@@ -57,14 +61,14 @@ def strptime(dtime):
 
     return datetime.datetime.strptime(dtime, DATETIME_PARSE)
 
-def strptime_to_utc(dtimestr):
+def strptime_to_utc(dtimestr: str) -> datetime.datetime:
     d_object = dateutil.parser.parse(dtimestr)
     if d_object.tzinfo is None:
         return d_object.replace(tzinfo=pytz.UTC)
 
     return d_object.astimezone(tz=pytz.UTC)
 
-def strftime(dtime, format_str=DATETIME_FMT):
+def strftime(dtime: datetime.datetime, format_str: str = DATETIME_FMT) -> str:
     if dtime.utcoffset() != datetime.timedelta(0):
         raise Exception('datetime must be pegged at UTC tzoneinfo')
 
@@ -78,7 +82,7 @@ def strftime(dtime, format_str=DATETIME_FMT):
 
     return dt_str
 
-def ratelimit(limit, every):
+def ratelimit(limit: int, every: int) -> Callable:
     def limitdecorator(func):
         times = collections.deque()
 
@@ -99,17 +103,19 @@ def ratelimit(limit, every):
     return limitdecorator
 
 
-def chunk(array, num):
+def chunk(array: list, num: int) -> Iterable[list]:
     for i in range(0, len(array), num):
         yield array[i:i + num]
 
 
-def load_json(path):
+def load_json(path: str) -> Union[dict, list]:
     with open(path, encoding='utf-8') as fil:
         return orjson.loads(fil.read())
 
 
-def update_state(state, entity, dtime):
+def update_state(
+    state: dict, entity, dtime: Union[str, datetime.datetime]
+) -> None:
     if dtime is None:
         return
 
@@ -123,7 +129,7 @@ def update_state(state, entity, dtime):
         state[entity] = dtime
 
 
-def parse_args(required_config_keys):
+def parse_args(required_config_keys: List[str]) -> argparse.Namespace:
     '''Parse standard command-line args.
 
     Parses the command-line arguments mentioned in the SPEC and the
@@ -184,45 +190,51 @@ def parse_args(required_config_keys):
     return args
 
 
-def check_config(config, required_keys):
+def check_config(config: dict, required_keys: List[str]) -> None:
     missing_keys = [key for key in required_keys if key not in config]
     if missing_keys:
         raise Exception(f'Config is missing required keys: {missing_keys}')
 
 
-def backoff(exceptions, giveup):
+def backoff(exceptions, giveup) -> Callable:
     """Decorates a function to retry up to 5 times using an exponential backoff
     function.
 
     exceptions is a tuple of exception classes that are retried
     giveup is a function that accepts the exception and returns True to retry
     """
-    return backoff_module.on_exception(
-        backoff_module.expo,
-        exceptions,
-        max_tries=5,
-        giveup=giveup,
-        factor=2)
+    return cast(
+        Callable,
+        backoff_module.on_exception(
+            backoff_module.expo,
+            exceptions,
+            max_tries=5,
+            giveup=giveup,
+            factor=2
+        )
+    )
 
 
-def exception_is_4xx(exception):
+def exception_is_4xx(exception: Exception) -> bool:
     """Returns True if exception is in the 4xx range."""
     if not hasattr(exception, 'response'):
         return False
 
-    if exception.response is None:
+    response = exception.response  # type: ignore  # Duck-typed requests.Response
+
+    if response is None:
         return False
 
-    if not hasattr(exception.response, 'status_code'):
+    if not hasattr(response, 'status_code'):
         return False
 
-    return 400 <= exception.response.status_code < 500
+    return 400 <= cast(int, response.status_code) < 500
 
 
-def handle_top_exception(logger):
+def handle_top_exception(logger: Logger) -> Callable:
     """A decorator that will catch exceptions and log the exception's message
     as a CRITICAL log."""
-    def decorator(fnc):
+    def decorator(fnc: Callable) -> Callable:
         @functools.wraps(fnc)
         def wrapped(*args, **kwargs):
             try:
@@ -234,7 +246,9 @@ def handle_top_exception(logger):
     return decorator
 
 
-def should_sync_field(inclusion, selected, default=False):
+def should_sync_field(
+    inclusion: str, selected: bool, default: bool = False
+) -> bool:
     """
     Returns True if a field should be synced.
 

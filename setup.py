@@ -30,6 +30,7 @@ setup(name="pipelinewise-singer-python",
               'ipython',
               'ipdb',
               'nose',
+              'mypy',
               'unify==0.5'
           ]
       },

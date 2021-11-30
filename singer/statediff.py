@@ -1,11 +1,14 @@
 import collections
+from typing import Sequence, Union, List, Any, Tuple
 
 # Named tuples for holding add, change, and remove operations
 Add = collections.namedtuple('Add', ['path', 'newval'])
 Change = collections.namedtuple('Change', ['path', 'oldval', 'newval'])
 Remove = collections.namedtuple('Remove', ['path', 'oldval'])
 
-def paths(data, base=None):
+def paths(
+    data: Union[list, dict, Any], base: Tuple[Any, ...] = None
+) -> List[Tuple[Tuple[Any, ...], Any]]:
     '''Walk a data structure and return a list of (path, value) tuples, where
     each path is the path to a leaf node in the data structure and the
     value is the value it points to. Each path will be a tuple.
@@ -28,7 +31,7 @@ def paths(data, base=None):
 
     return result
 
-def diff(oldstate, newstate):
+def diff(oldstate: dict, newstate: dict) -> Sequence[Union[Add, Change, Remove]]:
     '''Compare two states, returning a list of Add, Change, and Remove
     objects.
 
@@ -55,7 +58,7 @@ def diff(oldstate, newstate):
     all_paths.update(set(olddict.keys()))
     all_paths.update(set(newdict.keys()))
 
-    result = []
+    result: List[Any] = []
     for path in sorted(all_paths):
         if path in olddict:
             if path in newdict:

@@ -44,6 +44,8 @@ import orjson
 import re
 import time
 from collections import namedtuple
+from typing import Optional, cast
+from logging import Logger
 from singer.logger import get_logger
 
 DEFAULT_LOG_INTERVAL = 60
@@ -51,32 +53,32 @@ DEFAULT_LOG_INTERVAL = 60
 
 class Status:
     '''Constants for status codes'''
-    succeeded = 'succeeded'
-    failed = 'failed'
+    succeeded: str = 'succeeded'
+    failed: str = 'failed'
 
 
 class Metric:
     '''Constants for metric names'''
 
-    record_count = 'record_count'
-    job_duration = 'job_duration'
-    http_request_duration = 'http_request_duration'
+    record_count: str = 'record_count'
+    job_duration: str = 'job_duration'
+    http_request_duration: str = 'http_request_duration'
 
 
 class Tag:
     '''Constants for commonly used tags'''
 
-    endpoint = 'endpoint'
-    job_type = 'job_type'
-    http_status_code = 'http_status_code'
-    status = 'status'
+    endpoint: str = 'endpoint'
+    job_type: str = 'job_type'
+    http_status_code: str = 'http_status_code'
+    status: str = 'status'
 
 
 
 Point = namedtuple('Point', ['metric_type', 'metric', 'value', 'tags'])
 
 
-def log(logger, point):
+def log(logger: Logger, point: Point) -> None:
     '''Log a single data point.'''
     result = {
         'type': point.metric_type,
@@ -113,7 +115,9 @@ class Counter():
 
     '''
 
-    def __init__(self, metric, tags=None, log_interval=DEFAULT_LOG_INTERVAL):
+    def __init__(
+        self, metric: str, tags=None, log_interval=DEFAULT_LOG_INTERVAL
+    ) -> None:
         self.metric = metric
         self.value = 0
         self.tags = tags if tags else {}
@@ -121,22 +125,22 @@ class Counter():
         self.logger = get_logger()
         self.last_log_time = time.time()
 
-    def __enter__(self):
+    def __enter__(self) -> "Counter":
         self.last_log_time = time.time()
         return self
 
-    def increment(self, amount=1):
+    def increment(self, amount=1) -> None:
         '''Increments value by the specified amount.'''
         self.value += amount
         if self._ready_to_log():
             self._pop()
 
-    def _pop(self):
+    def _pop(self) -> None:
         log(self.logger, Point('counter', self.metric, self.value, self.tags))
         self.value = 0
         self.last_log_time = time.time()
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, exc_type, exc_value, traceback) -> None:
         self._pop()
 
     def _ready_to_log(self):
@@ -170,19 +174,19 @@ class Timer():  # pylint: disable=too-few-public-methods
     },
 
     '''
-    def __init__(self, metric, tags):
+    def __init__(self, metric: str, tags) -> None:
         self.metric = metric
         self.tags = tags if tags else {}
         self.logger = get_logger()
-        self.start_time = None
+        self.start_time: Optional[float] = None
 
-    def __enter__(self):
+    def __enter__(self) -> "Timer":
         self.start_time = time.time()
         return self
 
-    def elapsed(self):
+    def elapsed(self) -> float:
         '''Return elapsed time'''
-        return time.time() - self.start_time
+        return time.time() - cast(float, self.start_time)  # Assumes not null
 
     def __exit__(self, exc_type, exc_value, traceback):
         if Tag.status not in self.tags:
@@ -193,7 +197,7 @@ class Timer():  # pylint: disable=too-few-public-methods
         log(self.logger, Point('timer', self.metric, self.elapsed(), self.tags))
 
 
-def record_counter(endpoint=None, log_interval=DEFAULT_LOG_INTERVAL):
+def record_counter(endpoint=None, log_interval=DEFAULT_LOG_INTERVAL) -> Counter:
     '''Use for counting records retrieved from the source.
 
     with singer.metrics.record_counter(endpoint="users") as counter:
@@ -231,7 +235,7 @@ def job_timer(job_type=None):
     return Timer(Metric.job_duration, tags)
 
 
-def parse(line):
+def parse(line: str) -> Optional[Point]:
     '''Parse a Point from a log line and return it, or None if no data point.'''
     match = re.match(r'^INFO METRIC: (.*)$', line)
     if match:

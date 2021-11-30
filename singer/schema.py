@@ -1,6 +1,8 @@
 # pylint: disable=redefined-builtin, too-many-arguments, invalid-name
 '''Provides an object model for JSON Schema'''
 
+from typing import Any, Dict, cast
+
 import orjson
 
 # These are standard keys defined in the JSON Schema spec
@@ -32,11 +34,26 @@ class Schema():  # pylint: disable=too-many-instance-attributes
     '''
 
     # pylint: disable=too-many-locals
-    def __init__(self, type=None, format=None, properties=None, items=None,
-                 selected=None, inclusion=None, description=None, minimum=None,
-                 maximum=None, exclusiveMinimum=None, exclusiveMaximum=None,
-                 multipleOf=None, maxLength=None, minLength=None, additionalProperties=None,
-                 anyOf=None, patternProperties=None):
+    def __init__(
+        self,
+        type=None,
+        format=None,
+        properties=None,
+        items=None,
+        selected=None,
+        inclusion=None,
+        description=None,
+        minimum=None,
+        maximum=None,
+        exclusiveMinimum=None,
+        exclusiveMaximum=None,
+        multipleOf=None,
+        maxLength=None,
+        minLength=None,
+        additionalProperties=None,
+        anyOf=None,
+        patternProperties=None
+    ) -> None:
 
         self.type = type
         self.properties = properties
@@ -56,20 +73,20 @@ class Schema():  # pylint: disable=too-many-instance-attributes
         self.additionalProperties = additionalProperties
         self.patternProperties = patternProperties
 
-    def __str__(self):
+    def __str__(self) -> str:
         return orjson.dumps(self.to_dict()).decode('utf-8')
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         pairs = [k + '=' + repr(v) for k, v in self.__dict__.items()]
         args = ', '.join(pairs)
         return 'Schema(' + args + ')'
 
-    def __eq__(self, other):
-        return self.__dict__ == other.__dict__
+    def __eq__(self, other: Any) -> bool:
+        return cast(bool, self.__dict__ == other.__dict__)
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         '''Return the raw JSON Schema as a (possibly nested) dict.'''
-        result = {}
+        result: Dict[str, Any] = {}
 
         if self.properties is not None:
             result['properties'] = {
@@ -89,7 +106,7 @@ class Schema():  # pylint: disable=too-many-instance-attributes
         return result
 
     @classmethod
-    def from_dict(cls, data, **schema_defaults):
+    def from_dict(cls, data: dict, **schema_defaults) -> "Schema":
         '''Initialize a Schema object based on the JSON Schema structure.
 
         :param schema_defaults: The default values to the Schema
