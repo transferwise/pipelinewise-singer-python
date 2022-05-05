@@ -1,0 +1,16 @@
+[tool.black]
+line-length = 88
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+src_paths = "singer"
+use_parentheses = true
+known_first_party = "singer"
+include_trailing_comma = true
+add_imports = [
+    "from __future__ import annotations",
+]
+
+[tool.pytest.ini_options]
+addopts = "-v --doctest-modules"
