@@ -29,6 +29,7 @@ setup(name="pipelinewise-singer-python",
           'dev': [
               'pylint==2.11.1',
               'pytest==7.1.2',
+              'coverage[toml]',
               'ipython',
               'ipdb',
               'nose',

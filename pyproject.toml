@@ -1,6 +1,13 @@
 [tool.black]
 line-length = 88
 
+[tool.coverage.paths]
+source = ["singer", "*/site-packages"]
+
+[tool.coverage.run]
+branch = true
+source = ["singer"]
+
 [tool.isort]
 profile = "black"
 multi_line_output = 3
