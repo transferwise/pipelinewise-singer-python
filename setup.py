@@ -32,7 +32,6 @@ setup(name="pipelinewise-singer-python",
               'coverage[toml]',
               'ipython',
               'ipdb',
-              'nose',
               'unify==0.5'
           ]
       },
