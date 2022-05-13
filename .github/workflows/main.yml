@@ -66,10 +66,16 @@ jobs:
       with:
         name: coverage-data
 
-    - name: Combine coverage data and display human readable report
+    - name: Combine coverage data
       run: |
         coverage combine
+
+    - name: Generate XML coverage report
+      run: |
         coverage xml
+
+    - name: Display human readable report
+      run: |
         coverage report
 
     # Optional if you want to use codecov.io
