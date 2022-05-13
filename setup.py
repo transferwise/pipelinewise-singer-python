@@ -22,7 +22,7 @@ setup(name="pipelinewise-singer-python",
           'jsonschema==3.2.0',
           'orjson==3.6.5',
           'python-dateutil>=2.6.0',
-          'backoff==1.11.1',
+          'backoff==2.0.1',
           'ciso8601',
       ],
       extras_require={
