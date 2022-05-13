@@ -5,22 +5,25 @@ on:
     branches: [master]
   pull_request:
     branches: [master]
+  workflow_dispatch:
+    inputs: {}
 
 jobs:
   build:
-    
+
     strategy:
+      fail-fast: false
       matrix:
-        python-version: [3.6, 3.7, 3.8]
-    
+        python-version: ["3.7", "3.8", "3.9", "3.10"]
+
     runs-on: ubuntu-latest
 
     steps:
       - name: Checking out repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - name: Set up Python ${{ matrix.container[1] }}
-        uses: actions/setup-python@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -29,11 +32,52 @@ jobs:
           python -m pip install -U pip setuptools wheel
           python3 -m pip install -U .[dev]
 
-      - name: Check code formatting
-        run: find singer tests -type f -name '*.py' | xargs unify --check-only
-
       - name: Analysing the code with pylint
         run: pylint singer
 
       - name: Runs tests with coverage
-        run: nosetests --with-doctest -v --nocapture
+        run: coverage run --parallel -m pytest
+
+      - name: Upload coverage data
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-data
+          path: ".coverage.*"
+
+  coverage:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+    - name: Check out the repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.8"
+
+    - name: Install and upgrade dependencies
+      run: |
+        python -m pip install -U pip setuptools wheel
+        python3 -m pip install -U .[dev]
+
+    - name: Download coverage data
+      uses: actions/download-artifact@v3.0.0
+      with:
+        name: coverage-data
+
+    - name: Combine coverage data
+      run: |
+        coverage combine
+
+    - name: Generate XML coverage report
+      run: |
+        coverage xml
+
+    - name: Display human readable report
+      run: |
+        coverage report
+
+    # Optional if you want to use codecov.io
+    # - name: Upload coverage report
+    #   uses: codecov/codecov-action@v3

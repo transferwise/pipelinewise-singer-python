@@ -86,7 +86,6 @@ ENV/
 # Pipenv
 Pipfile
 Pipfile.lock
-pyproject.toml
 
 # Spyder project settings
 .spyderproject
