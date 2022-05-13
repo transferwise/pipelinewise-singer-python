@@ -2,7 +2,7 @@
 line-length = 120
 
 [tool.coverage.paths]
-source = ["singer", "*/site-packages"]
+source = ["singer"]
 
 [tool.coverage.run]
 branch = true
