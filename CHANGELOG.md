@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.0 (2022-06-14)
+  * Drop Python 3.6
+  * Add Python 3.9 and 3.10
+  * Bump `backoff` from `1.11.1` to `2.1.2`
+  * Bump orjson from `3.6.5` to `3.7.2`
+
 ## 2.0.1 (2021-11-23)
   * Fixed an issue when `format_message` returned newline character
 
