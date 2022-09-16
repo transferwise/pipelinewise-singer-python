@@ -296,7 +296,10 @@ def orjson_default(obj):
         return str(obj)
 
 def format_message(message, option=0):
-    return orjson.dumps(message.asdict(), option=option, default=orjson_default)
+    try:
+        return orjson.dumps(message.asdict(), option=option, default=orjson_default)
+    except:
+        print(message.asdict())
 
 def write_message(message):
     sys.stdout.buffer.write(format_message(message, option=orjson.OPT_APPEND_NEWLINE))
