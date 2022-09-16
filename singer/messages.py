@@ -2,6 +2,7 @@ import sys
 
 import pytz
 import orjson
+import decimal
 import ciso8601
 
 import singer.utils as u
