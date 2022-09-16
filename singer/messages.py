@@ -2,6 +2,7 @@ import sys
 
 import pytz
 import orjson
+import decimal
 import ciso8601
 
 import singer.utils as u
@@ -291,10 +292,13 @@ def parse_message(msg):
 
     return None
 
-
 def format_message(message, option=0):
-    return orjson.dumps(message.asdict(), option=option)
-
+    def default(obj):
+        if isinstance(obj, decimal.Decimal):
+            return str(obj)
+        raise TypeError
+    
+    return orjson.dumps(message.asdict(), option=option, default=default)
 
 def write_message(message):
     sys.stdout.buffer.write(format_message(message, option=orjson.OPT_APPEND_NEWLINE))
