@@ -291,10 +291,13 @@ def parse_message(msg):
 
     return None
 
+def orjson_default(obj):
+    if isinstance(obj, decimal.Decimal):
+        return str(obj)
+    raise TypeError
 
 def format_message(message, option=0):
-    return orjson.dumps(message.asdict(), option=option)
-
+    return orjson.dumps(message.asdict(), option=option, default=orjson_default)
 
 def write_message(message):
     sys.stdout.buffer.write(format_message(message, option=orjson.OPT_APPEND_NEWLINE))
