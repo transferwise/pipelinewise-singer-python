@@ -297,10 +297,7 @@ def format_message(message, option=0):
             return str(obj)
         raise TypeError
     
-    try:
-        return orjson.dumps(message.asdict(), option=option, default=default)
-    except:
-        print(message.asdict())
+    return orjson.dumps(message.asdict(), option=option, default=default)
 
 def write_message(message):
     sys.stdout.buffer.write(format_message(message, option=orjson.OPT_APPEND_NEWLINE))
