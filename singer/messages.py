@@ -294,7 +294,8 @@ def parse_message(msg):
 def orjson_default(obj):
     if isinstance(obj, decimal.Decimal):
         return str(obj)
-    raise TypeError
+    else:
+        raise TypeError
 
 def format_message(message, option=0):
     return orjson.dumps(message.asdict(), option=option, default=orjson_default)
