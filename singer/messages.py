@@ -291,13 +291,14 @@ def parse_message(msg):
 
     return None
 
-def orjson_default(obj):
-    if isinstance(obj, decimal.Decimal):
-        return str(obj)
-
 def format_message(message, option=0):
+    def default(obj):
+        if isinstance(obj, decimal.Decimal):
+            return str(obj)
+        raise TypeError
+    
     try:
-        return orjson.dumps(message.asdict(), option=option, default=orjson_default)
+        return orjson.dumps(message.asdict(), option=option, default=default)
     except:
         print(message.asdict())
 
