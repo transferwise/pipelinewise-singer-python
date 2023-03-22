@@ -295,7 +295,7 @@ def parse_message(msg):
 def format_message(message, option=0):
     def default(obj):
         if isinstance(obj, decimal.Decimal):
-            return str(obj)
+            return int(obj) if float(obj).is_integer() else float(obj)
         raise TypeError
     
     return orjson.dumps(message.asdict(), option=option, default=default)
