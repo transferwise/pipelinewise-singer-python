@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.2 (2022-03-23)
+ * Using orjson instead of simplejson or other serializers for speed benefit
+ * Fix: Output decimal.Decimal as int or float not str
+
 ## 2.0.1 (2021-11-23)
   * Fixed an issue when `format_message` returned newline character
 
