@@ -1,4 +1,6 @@
 # Changelog
+## 1.3.1 (2024-10-10)
+  * Bump `pytz` to `2024.2`
 
 ## 1.3.0 (2021-08-12)
   * Added `time_extracted` to BATCH message type
