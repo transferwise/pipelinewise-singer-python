@@ -1,3 +1,9 @@
+name: Upload Python Package to PyPi
+
+on:
+  release:
+    types: [created]
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
