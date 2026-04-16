@@ -66,7 +66,7 @@ def strptime_to_utc(dtimestr):
 
 def strftime(dtime, format_str=DATETIME_FMT):
     if dtime.utcoffset() != datetime.timedelta(0):
-        raise Exception('datetime must be pegged at UTC tzoneinfo')
+        raise ValueError('datetime must be pegged at UTC tzoneinfo')
 
     dt_str = None
     try:
@@ -187,7 +187,7 @@ def parse_args(required_config_keys):
 def check_config(config, required_keys):
     missing_keys = [key for key in required_keys if key not in config]
     if missing_keys:
-        raise Exception(f'Config is missing required keys: {missing_keys}')
+        raise RuntimeError(f'Config is missing required keys: {missing_keys}')
 
 
 def backoff(exceptions, giveup):

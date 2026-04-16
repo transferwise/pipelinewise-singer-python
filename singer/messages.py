@@ -12,7 +12,7 @@ class Message():
     '''Base class for messages.'''
 
     def asdict(self):  # pylint: disable=no-self-use
-        raise Exception('Not implemented')
+        raise RuntimeError('Not implemented')
 
     def __eq__(self, other):
         return isinstance(other, Message) and self.asdict() == other.asdict()
@@ -97,7 +97,7 @@ class SchemaMessage(Message):
         if isinstance(bookmark_properties, (str, bytes)):
             bookmark_properties = [bookmark_properties]
         if bookmark_properties and not isinstance(bookmark_properties, list):
-            raise Exception('bookmark_properties must be a string or list of strings')
+            raise TypeError('bookmark_properties must be a string or list of strings')
 
         self.bookmark_properties = bookmark_properties
 
@@ -226,7 +226,7 @@ class BatchMessage(Message):
 
 def _required_key(msg, k):
     if k not in msg:
-        raise Exception(f"Message is missing required key '{k}': {msg}")
+        raise ValueError(f"Message is missing required key '{k}': {msg}")
 
     return msg[k]
 
@@ -333,7 +333,7 @@ def write_schema(stream_name, schema, key_properties, bookmark_properties=None, 
     if isinstance(key_properties, (str, bytes)):
         key_properties = [key_properties]
     if not isinstance(key_properties, list):
-        raise Exception('key_properties must be a string or list of strings')
+        raise TypeError('key_properties must be a string or list of strings')
 
     write_message(
         SchemaMessage(
