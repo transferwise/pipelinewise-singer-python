@@ -25,7 +25,8 @@ class CatalogEntry():
     def __init__(self, tap_stream_id=None, stream=None,
                  key_properties=None, schema=None, replication_key=None,
                  is_view=None, database=None, table=None, row_count=None,
-                 stream_alias=None, metadata=None, replication_method=None):
+                 stream_alias=None,
+                 metadata=None, replication_method=None):   # pylint: disable=too-many-positional-arguments
 
         self.tap_stream_id = tap_stream_id
         self.stream = stream

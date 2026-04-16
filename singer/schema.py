@@ -36,7 +36,7 @@ class Schema():  # pylint: disable=too-many-instance-attributes
                  selected=None, inclusion=None, description=None, minimum=None,
                  maximum=None, exclusiveMinimum=None, exclusiveMaximum=None,
                  multipleOf=None, maxLength=None, minLength=None, additionalProperties=None,
-                 anyOf=None, patternProperties=None):
+                 anyOf=None, patternProperties=None):   # pylint: disable=too-many-positional-arguments
 
         self.type = type
         self.properties = properties

@@ -11,7 +11,7 @@ LOGGER = get_logger()
 class Message():
     '''Base class for messages.'''
 
-    def asdict(self):  # pylint: disable=no-self-use
+    def asdict(self):
         raise RuntimeError('Not implemented')
 
     def __eq__(self, other):
@@ -196,7 +196,7 @@ class BatchMessage(Message):
     def __init__(
         self, stream, filepath, file_format=None, compression=None,
         batch_size=None, time_extracted=None
-    ):
+    ):   # pylint: disable=too-many-positional-arguments
         self.stream = stream
         self.filepath = filepath
         self.format = file_format or 'jsonl'
@@ -363,7 +363,7 @@ def write_version(stream_name, version):
 def write_batch(
     stream_name, filepath, file_format=None,
     compression=None, batch_size=None, time_extracted=None
-):
+):   # pylint: disable=too-many-positional-arguments
     """Write a batch message.
 
     stream = 'users'
