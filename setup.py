@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
 setup(name="pipelinewise-singer-python",
       version='3.0.0',
       description="Singer.io utility library - PipelineWise compatible",
-      python_requires="==3.12",
+      python_requires=">=3.12, <3.13",
       long_description=long_description,
       long_description_content_type="text/markdown",
       author="TransferWise",
