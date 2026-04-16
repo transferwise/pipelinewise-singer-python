@@ -17,7 +17,11 @@ setup(name="pipelinewise-singer-python",
           'Programming Language :: Python :: 3 :: Only'
       ],
       url="https://github.com/transferwise/pipelinewise-singer-python",
+      setup_requires=[
+        'wrapt>=1.14.0',
+      ],
       install_requires=[
+          'wrapt>=1.14.0',
           'pytz',
           'jsonschema==3.2.0',
           'orjson==3.7.2',
