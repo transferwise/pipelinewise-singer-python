@@ -39,7 +39,7 @@ jobs:
         run: coverage run --parallel -m pytest
 
       - name: Upload coverage data
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-data
           path: ".coverage.*"
