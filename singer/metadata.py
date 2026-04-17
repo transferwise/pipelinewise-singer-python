@@ -12,7 +12,7 @@ def delete(compiled_metadata, breadcrumb, k):
 
 def write(compiled_metadata, breadcrumb, k, val):
     if val is None:
-        raise Exception()
+        raise ValueError()
     if breadcrumb in compiled_metadata:
         compiled_metadata.get(breadcrumb).update({k: val})
     else:

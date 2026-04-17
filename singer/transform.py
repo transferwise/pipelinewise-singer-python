@@ -229,7 +229,7 @@ class Transformer:
             return None # Short circuit in the case of null or empty string
 
         if self.integer_datetime_fmt not in VALID_DATETIME_FORMATS:
-            raise Exception('Invalid integer datetime parsing option')
+            raise ValueError('Invalid integer datetime parsing option')
 
         if self.integer_datetime_fmt == NO_INTEGER_DATETIME_PARSING:
             return string_to_datetime(value)

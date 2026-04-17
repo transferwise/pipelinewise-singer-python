@@ -31,6 +31,7 @@ class Schema():  # pylint: disable=too-many-instance-attributes
 
     '''
 
+    # pylint: disable=too-many-positional-arguments
     # pylint: disable=too-many-locals
     def __init__(self, type=None, format=None, properties=None, items=None,
                  selected=None, inclusion=None, description=None, minimum=None,
