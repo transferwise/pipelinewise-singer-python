@@ -6,7 +6,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: gha-production-medium
     environment: pypi
     permissions:
       id-token: write
