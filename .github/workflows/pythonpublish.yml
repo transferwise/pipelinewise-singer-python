@@ -7,10 +7,6 @@ on:
 jobs:
   deploy:
     runs-on: gha-production-medium
-    environment: pypi
-    permissions:
-      id-token: write
-      contents: read
     steps:
       - uses: actions/checkout@v4.1.7
       - name: Set up Python
@@ -26,4 +22,6 @@ jobs:
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
           verbose: true
