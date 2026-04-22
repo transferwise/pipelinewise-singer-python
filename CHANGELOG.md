@@ -1,4 +1,12 @@
 # Changelog
+## 3.0.2 (2026-04-22)
+  * Handle Decimal objects in messages
+
+## 3.0.1 (2026-04-21)
+  * Fixed PyPI publisher
+  
+## 3.0.0 (2026-04-20)
+  * Support for Python 3.12
 
 ## 2.0.1 (2021-11-23)
   * Fixed an issue when `format_message` returned newline character

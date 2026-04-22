@@ -3,6 +3,7 @@ import sys
 import pytz
 import orjson
 import ciso8601
+import decimal
 
 import singer.utils as u
 from .logger import get_logger
@@ -291,9 +292,13 @@ def parse_message(msg):
 
     return None
 
+def handler_for_decimal_object(obj):
+    if isinstance(obj, decimal.Decimal):
+        return float(obj)
+    raise TypeError
 
 def format_message(message, option=0):
-    return orjson.dumps(message.asdict(), option=option)
+    return orjson.dumps(message.asdict(), option=option, default=handler_for_decimal_object)
 
 
 def write_message(message):

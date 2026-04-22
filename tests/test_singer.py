@@ -2,6 +2,9 @@ import singer
 import orjson
 import unittest
 import dateutil
+import decimal
+
+from unittest.mock import MagicMock
 
 
 class TestSinger(unittest.TestCase):
@@ -205,6 +208,45 @@ class TestParsingNumbers(unittest.TestCase):
 
         self.assertEqual(b'{"type":"RECORD","stream":"users","record":{"name":"foo"}}\n',
                          singer.format_message(record_message, option=orjson.OPT_APPEND_NEWLINE))
+
+    def test_default_handler_decimal(self):
+        """Test that decimal.Decimal is converted to a string."""
+        d = decimal.Decimal("10.50")
+        result = singer.handler_for_decimal_object(d)
+        self.assertEqual(result, 10.50)
+        self.assertIsInstance(result, float)
+
+    def test_default_handler_error(self):
+        """Test that unsupported types still raise a TypeError."""
+        with self.assertRaises(TypeError):
+            singer.handler_for_decimal_object(range(5))
+
+    def test_format_message_with_decimals(self):
+        """Test that format_message correctly serializes a message containing decimals."""
+        # Mocking the message object
+        mock_message = MagicMock()
+        mock_message.asdict.return_value = {
+            "id": 1,
+            "price": decimal.Decimal("99.99"),
+            "status": "active"
+        }
+
+        # We expect the Decimal to become a string in the resulting bytes
+        expected_output = b'{"id":1,"price":99.99,"status":"active"}'
+
+        result = singer.format_message(mock_message)
+        self.assertEqual(result, expected_output)
+
+    def test_format_message_options(self):
+        """Test that orjson options (like appending a newline) work."""
+        mock_message = MagicMock()
+        mock_message.asdict.return_value = {"key": "val"}
+
+        # orjson.OPT_APPEND_NEWLINE is an integer bitmask
+        result = singer.format_message(mock_message, option=orjson.OPT_APPEND_NEWLINE)
+
+        # Should end with a newline byte (10)
+        self.assertTrue(result.endswith(b'\n'))
 
 
 if __name__ == '__main__':
