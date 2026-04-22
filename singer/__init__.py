@@ -35,7 +35,8 @@ from singer.messages import (
     write_schema,
     write_state,
     write_version,
-    write_batch
+    write_batch,
+    handler_for_decimal_object
 )
 
 from singer.transform import (
