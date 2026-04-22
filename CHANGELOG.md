@@ -1,6 +1,6 @@
 # Changelog
 ## 3.0.2 (2026-04-22)
-  * Handler for Decimal object in message 
+  * Handle Decimal objects in messages
 
 ## 3.0.1 (2026-04-21)
   * Fixed PyPI publisher
